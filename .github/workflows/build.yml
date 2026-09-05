@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build & Export APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Code
@@ -114,3 +116,25 @@ jobs:
           fi
 
           echo "Successfully sent APK to Telegram!"
+
+      - name: Publish GitHub Release (OTA Update)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ] || [ ! -f "$APK_PATH" ]; then
+            echo "Error: No APK found to publish as release."
+            exit 1
+          fi
+
+          RELEASE_APK="USSD_Assistant.apk"
+          cp "$APK_PATH" "$RELEASE_APK"
+
+          TAG_NAME="v1.0.${{ github.run_number }}"
+          echo "Creating GitHub Release $TAG_NAME..."
+
+          gh release create "$TAG_NAME" "$RELEASE_APK" \
+            --title "USSD Assistant $TAG_NAME" \
+            --notes "Automated release build ${{ github.run_number }} from commit ${{ github.sha }}. Includes seamless in-app OTA update support." \
+            --latest

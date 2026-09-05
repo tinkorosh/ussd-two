@@ -1,44 +1,99 @@
-package com.example.ussdhelper // ⚠️ Check that this matches your actual package name
+package com.example.ussdhelper
 
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.telecom.TelecomManager
 import android.telephony.SubscriptionManager
+import android.view.View
 import android.widget.Button
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.launch
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var prefs: SharedPreferences
+    private var latestRelease: ReleaseInfo? = null
+    private var downloadedApk: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        findViewById<Button>(R.id.enableAccessibilityBtn).setOnClickListener {
+        prefs = getSharedPreferences("ussd_prefs", Context.MODE_PRIVATE)
+
+        setupBottomNavigation()
+        setupDashboardActions()
+        setupSettingsAndUpdater()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateAccessibilityStatus()
+    }
+
+    private fun setupBottomNavigation() {
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        val dashboardView = findViewById<View>(R.id.dashboardView)
+        val settingsView = findViewById<View>(R.id.settingsView)
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_dashboard -> {
+                    dashboardView.visibility = View.VISIBLE
+                    settingsView.visibility = View.GONE
+                    true
+                }
+                R.id.nav_settings -> {
+                    dashboardView.visibility = View.GONE
+                    settingsView.visibility = View.VISIBLE
+                    // Check for updates automatically when user opens Settings tab if not checked yet
+                    if (latestRelease == null) {
+                        performUpdateCheck(silent = true)
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun setupDashboardActions() {
+        findViewById<Button>(R.id.enableAccessibilityBtn)?.setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
 
         // Dial *999# targeting SIM 1
-        findViewById<Button>(R.id.dial999Btn).setOnClickListener {
-            dialUssd("*999#", simSlot = 1)
+        findViewById<Button>(R.id.dial999Btn)?.setOnClickListener {
+            dialUssdWithPreference("*999#", defaultSimSlot = 1)
         }
 
         // Dial *777# targeting SIM 2
-        findViewById<Button>(R.id.dial777Btn).setOnClickListener {
-            dialUssd("*777#", simSlot = 2)
+        findViewById<Button>(R.id.dial777Btn)?.setOnClickListener {
+            dialUssdWithPreference("*777#", defaultSimSlot = 2)
         }
 
         // Custom USSD dialer buttons
-        val customInput = findViewById<android.widget.EditText>(R.id.customUssdInput)
+        val customInput = findViewById<EditText>(R.id.customUssdInput)
         findViewById<Button>(R.id.customDialSim1Btn)?.setOnClickListener {
             val code = customInput?.text?.toString()?.trim()
             if (code.isNullOrEmpty()) {
-                android.widget.Toast.makeText(this, "Please enter a USSD code (e.g. *999#)", android.widget.Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter a USSD code (e.g. *999#)", Toast.LENGTH_SHORT).show()
             } else {
                 dialUssd(code, simSlot = 1)
             }
@@ -47,20 +102,175 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.customDialSim2Btn)?.setOnClickListener {
             val code = customInput?.text?.toString()?.trim()
             if (code.isNullOrEmpty()) {
-                android.widget.Toast.makeText(this, "Please enter a USSD code (e.g. *777#)", android.widget.Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter a USSD code (e.g. *777#)", Toast.LENGTH_SHORT).show()
             } else {
                 dialUssd(code, simSlot = 2)
             }
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateAccessibilityStatus()
+    private fun setupSettingsAndUpdater() {
+        val currentVersionText = findViewById<TextView>(R.id.currentVersionText)
+        val checkUpdateBtn = findViewById<Button>(R.id.checkUpdateBtn)
+        val downloadInstallBtn = findViewById<Button>(R.id.downloadInstallBtn)
+        val openGithubBtn = findViewById<Button>(R.id.openGithubRepoBtn)
+
+        val currentVersion = "v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})"
+        currentVersionText?.text = "Installed: $currentVersion"
+
+        checkUpdateBtn?.setOnClickListener {
+            performUpdateCheck(silent = false)
+        }
+
+        downloadInstallBtn?.setOnClickListener {
+            val release = latestRelease
+            if (release != null) {
+                performApkDownloadAndInstall(release)
+            }
+        }
+
+        openGithubBtn?.setOnClickListener {
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/tinkorosh/ussd-two"))
+            startActivity(browserIntent)
+        }
+
+        // Dialing SIM preference radios
+        val radioGroup = findViewById<RadioGroup>(R.id.simPreferenceRadioGroup)
+        val savedPref = prefs.getInt("pref_sim_choice", 0) // 0: ask, 1: sim1, 2: sim2
+        when (savedPref) {
+            1 -> findViewById<RadioButton>(R.id.radioSim1)?.isChecked = true
+            2 -> findViewById<RadioButton>(R.id.radioSim2)?.isChecked = true
+            else -> findViewById<RadioButton>(R.id.radioSimAsk)?.isChecked = true
+        }
+
+        radioGroup?.setOnCheckedChangeListener { _, checkedId ->
+            val choice = when (checkedId) {
+                R.id.radioSim1 -> 1
+                R.id.radioSim2 -> 2
+                else -> 0
+            }
+            prefs.edit().putInt("pref_sim_choice", choice).apply()
+        }
+    }
+
+    private fun performUpdateCheck(silent: Boolean) {
+        val statusBadge = findViewById<TextView>(R.id.updateStatusBadge)
+        val releaseBox = findViewById<View>(R.id.releaseDetailsBox)
+        val releaseTag = findViewById<TextView>(R.id.releaseTagText)
+        val releaseSize = findViewById<TextView>(R.id.releaseSizeText)
+        val releaseNotes = findViewById<TextView>(R.id.releaseNotesText)
+        val downloadBtn = findViewById<Button>(R.id.downloadInstallBtn)
+        val checkBtn = findViewById<Button>(R.id.checkUpdateBtn)
+
+        statusBadge?.text = "Checking..."
+        statusBadge?.setTextColor(android.graphics.Color.parseColor("#38BDF8"))
+        checkBtn?.isEnabled = false
+
+        lifecycleScope.launch {
+            val result = AppUpdater.checkLatestRelease(BuildConfig.VERSION_NAME)
+            checkBtn?.isEnabled = true
+
+            result.onSuccess { release ->
+                latestRelease = release
+
+                val sizeInMb = if (release.apkSize > 0) {
+                    String.format("%.1f MB", release.apkSize / (1024.0 * 1024.0))
+                } else {
+                    "APK Ready"
+                }
+
+                releaseTag?.text = "Latest: ${release.tagName} (${release.title})"
+                releaseSize?.text = sizeInMb
+                releaseNotes?.text = release.releaseNotes.ifBlank { "Release ${release.tagName} is available." }
+                releaseBox?.visibility = View.VISIBLE
+
+                if (release.isNewerVersion) {
+                    statusBadge?.text = "Update Available"
+                    statusBadge?.setTextColor(android.graphics.Color.parseColor("#F59E0B"))
+                    statusBadge?.setBackgroundResource(R.drawable.bg_status_inactive)
+                    downloadBtn?.visibility = View.VISIBLE
+                    downloadBtn?.text = "Download & Install ${release.tagName}"
+                    if (!silent) {
+                        Toast.makeText(this@MainActivity, "Update ${release.tagName} is available!", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    statusBadge?.text = "Up to date"
+                    statusBadge?.setTextColor(android.graphics.Color.parseColor("#34D399"))
+                    statusBadge?.setBackgroundResource(R.drawable.bg_status_active)
+                    // Still allow re-installing if the user wants
+                    downloadBtn?.visibility = View.VISIBLE
+                    downloadBtn?.text = "Re-install Latest APK (${release.tagName})"
+                    if (!silent) {
+                        Toast.makeText(this@MainActivity, "You are using the latest version.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }.onFailure { error ->
+                statusBadge?.text = "Check failed"
+                statusBadge?.setTextColor(android.graphics.Color.parseColor("#EF4444"))
+                if (!silent) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Update check: ${error.localizedMessage}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private fun performApkDownloadAndInstall(release: ReleaseInfo) {
+        val progressBox = findViewById<View>(R.id.downloadProgressBox)
+        val progressBar = findViewById<ProgressBar>(R.id.downloadProgressBar)
+        val progressText = findViewById<TextView>(R.id.downloadProgressText)
+        val downloadBtn = findViewById<Button>(R.id.downloadInstallBtn)
+        val checkBtn = findViewById<Button>(R.id.checkUpdateBtn)
+
+        progressBox?.visibility = View.VISIBLE
+        downloadBtn?.isEnabled = false
+        checkBtn?.isEnabled = false
+
+        lifecycleScope.launch {
+            val result = AppUpdater.downloadApk(this@MainActivity, release.apkDownloadUrl) { percent, downloaded, total ->
+                if (percent >= 0) {
+                    progressBar?.isIndeterminate = false
+                    progressBar?.progress = percent
+                    val dlMb = String.format("%.1f", downloaded / (1024.0 * 1024.0))
+                    val totalMb = String.format("%.1f", total / (1024.0 * 1024.0))
+                    progressText?.text = "Downloading: $dlMb MB / $totalMb MB ($percent%)"
+                } else {
+                    progressBar?.isIndeterminate = true
+                    val dlMb = String.format("%.1f", downloaded / (1024.0 * 1024.0))
+                    progressText?.text = "Downloading: $dlMb MB..."
+                }
+            }
+
+            downloadBtn?.isEnabled = true
+            checkBtn?.isEnabled = true
+
+            result.onSuccess { apkFile ->
+                downloadedApk = apkFile
+                progressText?.text = "Download complete! Opening installer..."
+                Toast.makeText(this@MainActivity, "Download complete! Starting installer...", Toast.LENGTH_SHORT).show()
+                AppUpdater.installApk(this@MainActivity, apkFile)
+            }.onFailure { error ->
+                progressText?.text = "Download failed: ${error.localizedMessage}"
+                Toast.makeText(this@MainActivity, "Error downloading APK: ${error.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun dialUssdWithPreference(ussdCode: String, defaultSimSlot: Int) {
+        val pref = prefs.getInt("pref_sim_choice", 0)
+        val targetSlot = when (pref) {
+            1 -> 1
+            2 -> 2
+            else -> defaultSimSlot
+        }
+        dialUssd(ussdCode, simSlot = targetSlot)
     }
 
     private fun updateAccessibilityStatus() {
-        val statusText = findViewById<android.widget.TextView>(R.id.accessibilityStatusText) ?: return
+        val statusText = findViewById<TextView>(R.id.accessibilityStatusText) ?: return
         val enableBtn = findViewById<Button>(R.id.enableAccessibilityBtn)
         val isEnabled = isAccessibilityServiceEnabled()
 
@@ -151,9 +361,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Only attach the account handle extra if we successfully matched SIM 2.
-            // If matchedHandle is null, we do NOT attach EXTRA_PHONE_ACCOUNT_HANDLE
-            // to prevent the OS from forcing the call back to SIM 1 (Default).
             if (matchedHandle != null) {
                 intent.putExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, matchedHandle)
             }

@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dashboardScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#0C0E17">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="36dp">
+
+        <!-- Header Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_button_accent"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_phone"
+                    android:contentDescription="USSD Icon" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="USSD Assistant"
+                    android:textColor="#F8FAFC"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Interactive Touch Menus &amp; SIM Automation"
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+            <!-- Mode pill -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DUAL SIM"
+                android:textColor="#38BDF8"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:background="@drawable/bg_sim1_badge"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"/>
+        </LinearLayout>
+
+        <!-- CARD 1: Accessibility Bridge Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_icon_badge"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_shield_check"
+                        android:contentDescription="Accessibility Service" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ACCESSIBILITY SERVICE"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"/>
+
+                    <TextView
+                        android:id="@+id/accessibilityStatusText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="● Checking service status..."
+                        android:textColor="#34D399"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Required to intercept carrier dialogs and render custom touch menus directly on top of USSD sessions."
+                android:textColor="#64748B"
+                android:textSize="12sp"
+                android:lineSpacingMultiplier="1.2"
+                android:layout_marginBottom="16dp"/>
+
+            <Button
+                android:id="@+id/enableAccessibilityBtn"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/bg_button_accent"
+                android:text="Configure Accessibility Service"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:drawableStart="@drawable/ic_settings_gear"
+                android:drawablePadding="10dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:stateListAnimator="@null"
+                style="?android:attr/borderlessButtonStyle"/>
+        </LinearLayout>
+
+        <!-- CARD 2: Quick Action Presets -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_icon_badge"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_sim_card"
+                        android:contentDescription="SIM Presets" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="QUICK ACTION PRESETS"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1-Tap Carrier Menus"
+                        android:textColor="#F8FAFC"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Preset 1: *999# (SIM 1) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_preset_item"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="44dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_sim1_badge"
+                    android:text="SIM 1"
+                    android:textColor="#38BDF8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="*999#"
+                        android:textColor="#F8FAFC"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ethio Telecom Main Portal"
+                        android:textColor="#64748B"
+                        android:textSize="11sp"/>
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/dial999Btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_button_sim"
+                    android:text="Dial"
+                    android:textColor="#38BDF8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:drawableStart="@drawable/ic_phone"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="#38BDF8"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:stateListAnimator="@null"
+                    style="?android:attr/borderlessButtonStyle"/>
+            </LinearLayout>
+
+            <!-- Preset 2: *777# (SIM 2) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_preset_item"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="44dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_sim2_badge"
+                    android:text="SIM 2"
+                    android:textColor="#C084FC"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="*777#"
+                        android:textColor="#F8FAFC"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Airtime, Transfers &amp; Bundles"
+                        android:textColor="#64748B"
+                        android:textSize="11sp"/>
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/dial777Btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_button_sim"
+                    android:text="Dial"
+                    android:textColor="#C084FC"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:drawableStart="@drawable/ic_phone"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="#C084FC"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:stateListAnimator="@null"
+                    style="?android:attr/borderlessButtonStyle"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- CARD 3: Custom USSD Code Dialer -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_icon_badge"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_dialpad"
+                        android:contentDescription="Custom Dialer" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CUSTOM USSD DIALER"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Run Any USSD Request"
+                        android:textColor="#F8FAFC"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/customUssdInput"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="e.g. *804# or *123#"
+                android:textColorHint="#475569"
+                android:textColor="#F8FAFC"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:inputType="phone"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginBottom="14dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/customDialSim1Btn"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_button_sim"
+                    android:text="Dial SIM 1"
+                    android:textColor="#38BDF8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:drawableStart="@drawable/ic_phone"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="#38BDF8"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:stateListAnimator="@null"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_marginEnd="6dp"/>
+
+                <Button
+                    android:id="@+id/customDialSim2Btn"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_button_sim"
+                    android:text="Dial SIM 2"
+                    android:textColor="#C084FC"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:drawableStart="@drawable/ic_phone"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="#C084FC"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:stateListAnimator="@null"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_marginStart="6dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- CARD 4: How It Works Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_preset_item"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_info"
+                android:contentDescription="Info"
+                android:layout_marginTop="2dp"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="When dialing USSD from this app, incoming menus are intercepted and displayed as tap-friendly buttons directly on top of the phone screen."
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:lineSpacingMultiplier="1.25"
+                android:layout_marginStart="12dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
