@@ -1,35 +1,54 @@
 package com.example.ussdhelper
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.telecom.TelecomManager
 import android.telephony.SubscriptionManager
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
+import java.util.UUID
+
+data class QuickPreset(
+    val id: String,
+    val name: String,
+    val code: String,
+    val simSlot: Int, // 1 for SIM 1, 2 for SIM 2, 0 for default
+    val isCustom: Boolean = false
+)
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var prefs: SharedPreferences
     private var latestRelease: ReleaseInfo? = null
     private var downloadedApk: File? = null
+    private val presetsList = mutableListOf<QuickPreset>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +57,9 @@ class MainActivity : AppCompatActivity() {
         prefs = getSharedPreferences("ussd_prefs", Context.MODE_PRIVATE)
 
         setupBottomNavigation()
-        setupDashboardActions()
+        setupAccessibilityBridgeAndTestButtons()
+        setupPresetsSystem()
+        setupCustomDialer()
         setupSettingsAndUpdater()
     }
 
@@ -62,7 +83,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_settings -> {
                     dashboardView.visibility = View.GONE
                     settingsView.visibility = View.VISIBLE
-                    // Check for updates automatically when user opens Settings tab if not checked yet
                     if (latestRelease == null) {
                         performUpdateCheck(silent = true)
                     }
@@ -73,22 +93,295 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDashboardActions() {
-        findViewById<Button>(R.id.enableAccessibilityBtn)?.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+    private fun setupAccessibilityBridgeAndTestButtons() {
+        val toggleLaunchersBtn = findViewById<Button>(R.id.toggleLaunchersBtn)
+        val testLaunchersContainer = findViewById<View>(R.id.testLaunchersContainer)
+        val accessibilityCard = findViewById<View>(R.id.accessibilityCard)
+
+        // Toggle test launchers container
+        val toggleAction = {
+            if (testLaunchersContainer.visibility == View.VISIBLE) {
+                testLaunchersContainer.visibility = View.GONE
+                toggleLaunchersBtn?.text = if (isAccessibilityServiceEnabled()) "Shortcuts ▾" else "Direct Jump ▾"
+            } else {
+                testLaunchersContainer.visibility = View.VISIBLE
+                toggleLaunchersBtn?.text = "Hide ▲"
+            }
         }
 
-        // Dial *999# targeting SIM 1
-        findViewById<Button>(R.id.dial999Btn)?.setOnClickListener {
-            dialUssdWithPreference("*999#", defaultSimSlot = 1)
+        toggleLaunchersBtn?.setOnClickListener { toggleAction() }
+        accessibilityCard?.setOnClickListener {
+            if (!isAccessibilityServiceEnabled() && testLaunchersContainer.visibility != View.VISIBLE) {
+                toggleAction()
+            }
         }
 
-        // Dial *777# targeting SIM 2
-        findViewById<Button>(R.id.dial777Btn)?.setOnClickListener {
-            dialUssdWithPreference("*777#", defaultSimSlot = 2)
+        // Test Button 1: Direct Service Page (using targeted fragment key)
+        findViewById<Button>(R.id.btnTestDirectService)?.setOnClickListener {
+            val componentName = ComponentName(packageName, UssdAccessibilityService::class.java.name).flattenToString()
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                putExtra(":settings:fragment_args_key", componentName)
+                val bundle = Bundle().apply {
+                    putString(":settings:fragment_args_key", componentName)
+                }
+                putExtra(":settings:show_fragment_args", bundle)
+            }
+            tryLaunchIntent(intent, "Direct Service page")
         }
 
-        // Custom USSD dialer buttons
+        // Test Button 2: Installed / Downloaded Services Subpage
+        findViewById<Button>(R.id.btnTestInstalledServices)?.setOnClickListener {
+            val candidates = listOf(
+                // Samsung One UI Installed Services
+                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.Settings\$AccessibilityInstalledServiceActivity")),
+                // Android 13+ Direct Accessibility Details Settings with package URI
+                Intent("android.settings.ACCESSIBILITY_DETAILS_SETTINGS").apply {
+                    data = Uri.parse("package:$packageName")
+                },
+                // AOSP Installed Services
+                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.accessibility.InstalledServicesActivity")),
+                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.accessibility.InstalledServices")),
+                // Transsion (Tecno / Infinix HiOS / XOS)
+                Intent("com.transsion.settings.accessibility.INSTALLED_SERVICES"),
+                // Xiaomi MIUI / HyperOS
+                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.accessibility.AccessibilityInstalledServicesSettings"))
+            )
+
+            var launched = false
+            for (candidate in candidates) {
+                try {
+                    if (candidate.resolveActivity(packageManager) != null) {
+                        startActivity(candidate)
+                        Toast.makeText(this, "Opening Installed Services subpage", Toast.LENGTH_SHORT).show()
+                        launched = true
+                        break
+                    }
+                } catch (_: Exception) {}
+            }
+
+            if (!launched) {
+                // Fallback: General Accessibility Settings
+                tryLaunchIntent(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), "General Accessibility (Installed Services fallback)")
+            }
+        }
+
+        // Test Button 3: App Details (Unrestrict settings on Android 13+)
+        findViewById<Button>(R.id.btnTestAppDetails)?.setOnClickListener {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:$packageName")
+            }
+            tryLaunchIntent(intent, "App Details (Allow Restricted Settings)")
+        }
+
+        // Test Button 4: General Accessibility Settings
+        findViewById<Button>(R.id.btnTestGeneralSettings)?.setOnClickListener {
+            tryLaunchIntent(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), "General Accessibility Settings")
+        }
+    }
+
+    private fun tryLaunchIntent(intent: Intent, label: String) {
+        try {
+            startActivity(intent)
+            Toast.makeText(this, "Opening: $label", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            // Fallback to standard accessibility settings
+            try {
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                Toast.makeText(this, "Falling back to Accessibility Settings", Toast.LENGTH_SHORT).show()
+            } catch (err: Exception) {
+                Toast.makeText(this, "Could not open settings: ${err.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun setupPresetsSystem() {
+        loadPresets()
+        renderPresets()
+
+        findViewById<Button>(R.id.btnAddPreset)?.setOnClickListener {
+            showAddPresetDialog()
+        }
+    }
+
+    private fun loadPresets() {
+        presetsList.clear()
+
+        // 1. Built-in defaults
+        presetsList.add(QuickPreset("def_999", "Ethio Telecom Portal", "*999#", simSlot = 1, isCustom = false))
+        presetsList.add(QuickPreset("def_777", "Airtime & Bundles", "*777#", simSlot = 2, isCustom = false))
+        presetsList.add(QuickPreset("def_804", "Check Account Balance", "*804#", simSlot = 1, isCustom = false))
+        presetsList.add(QuickPreset("def_127", "Check Package Status", "*127#", simSlot = 1, isCustom = false))
+
+        // 2. User-added custom presets
+        val jsonStr = prefs.getString("custom_presets_json", null)
+        if (!jsonStr.isNullOrEmpty()) {
+            try {
+                val array = JSONArray(jsonStr)
+                for (i in 0 until array.length()) {
+                    val obj = array.getJSONObject(i)
+                    presetsList.add(
+                        QuickPreset(
+                            id = obj.optString("id", UUID.randomUUID().toString()),
+                            name = obj.optString("name", "Custom Preset"),
+                            code = obj.optString("code", "*999#"),
+                            simSlot = obj.optInt("simSlot", 1),
+                            isCustom = true
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun saveCustomPresets() {
+        val customPresets = presetsList.filter { it.isCustom }
+        val array = JSONArray()
+        for (preset in customPresets) {
+            val obj = JSONObject().apply {
+                put("id", preset.id)
+                put("name", preset.name)
+                put("code", preset.code)
+                put("simSlot", preset.simSlot)
+            }
+            array.put(obj)
+        }
+        prefs.edit().putString("custom_presets_json", array.toString()).apply()
+    }
+
+    private fun renderPresets() {
+        val container = findViewById<LinearLayout>(R.id.presetsContainer) ?: return
+        container.removeAllViews()
+
+        val inflater = LayoutInflater.from(this)
+
+        for (preset in presetsList) {
+            val itemView = inflater.inflate(R.layout.item_quick_preset, container, false)
+            val simBadge = itemView.findViewById<TextView>(R.id.presetSimBadge)
+            val nameText = itemView.findViewById<TextView>(R.id.presetNameText)
+            val codeText = itemView.findViewById<TextView>(R.id.presetCodeText)
+            val dialBtn = itemView.findViewById<Button>(R.id.presetDialBtn)
+            val deleteBtn = itemView.findViewById<ImageButton>(R.id.presetDeleteBtn)
+
+            nameText.text = preset.name
+            codeText.text = preset.code
+
+            when (preset.simSlot) {
+                1 -> {
+                    simBadge.text = "SIM 1"
+                    simBadge.setBackgroundResource(R.drawable.bg_sim1_badge)
+                    simBadge.setTextColor(Color.parseColor("#38BDF8"))
+                    dialBtn.setBackgroundResource(R.drawable.bg_button_sim1)
+                    dialBtn.text = "Dial SIM 1"
+                }
+                2 -> {
+                    simBadge.text = "SIM 2"
+                    simBadge.setBackgroundResource(R.drawable.bg_sim2_badge)
+                    simBadge.setTextColor(Color.parseColor("#C084FC"))
+                    dialBtn.setBackgroundResource(R.drawable.bg_button_sim2)
+                    dialBtn.text = "Dial SIM 2"
+                }
+                else -> {
+                    simBadge.text = "AUTO"
+                    simBadge.setBackgroundResource(R.drawable.bg_status_active)
+                    simBadge.setTextColor(Color.parseColor("#34D399"))
+                    dialBtn.setBackgroundResource(R.drawable.bg_button_primary)
+                    dialBtn.text = "Dial"
+                }
+            }
+
+            dialBtn.setOnClickListener {
+                dialUssdWithPreference(preset.code, defaultSimSlot = if (preset.simSlot != 0) preset.simSlot else 1)
+            }
+
+            if (preset.isCustom) {
+                deleteBtn.visibility = View.VISIBLE
+                deleteBtn.setOnClickListener {
+                    AlertDialog.Builder(this)
+                        .setTitle("Delete Preset")
+                        .setMessage("Are you sure you want to delete '${preset.name}' (${preset.code})?")
+                        .setPositiveButton("Delete") { _, _ ->
+                            presetsList.removeAll { it.id == preset.id }
+                            saveCustomPresets()
+                            renderPresets()
+                            Toast.makeText(this, "Preset deleted", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
+            } else {
+                deleteBtn.visibility = View.GONE
+            }
+
+            container.addView(itemView)
+        }
+    }
+
+    private fun showAddPresetDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_preset, null)
+        val nameInput = dialogView.findViewById<EditText>(R.id.dialogPresetNameInput)
+        val codeInput = dialogView.findViewById<EditText>(R.id.dialogPresetCodeInput)
+        val radioSim1 = dialogView.findViewById<RadioButton>(R.id.dialogRadioSim1)
+        val radioSim2 = dialogView.findViewById<RadioButton>(R.id.dialogRadioSim2)
+        val cancelBtn = dialogView.findViewById<Button>(R.id.dialogCancelBtn)
+        val saveBtn = dialogView.findViewById<Button>(R.id.dialogSaveBtn)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        cancelBtn.setOnClickListener { dialog.dismiss() }
+
+        saveBtn.setOnClickListener {
+            val name = nameInput.text.toString().trim()
+            var code = codeInput.text.toString().trim()
+
+            if (name.isEmpty()) {
+                nameInput.error = "Please enter a preset name"
+                return@setOnClickListener
+            }
+            if (code.isEmpty()) {
+                codeInput.error = "Please enter a USSD code"
+                return@setOnClickListener
+            }
+
+            if (!code.startsWith("*")) {
+                code = "*$code"
+            }
+            if (!code.endsWith("#")) {
+                code = "$code#"
+            }
+
+            val selectedSlot = when {
+                radioSim1.isChecked -> 1
+                radioSim2.isChecked -> 2
+                else -> 0
+            }
+
+            val newPreset = QuickPreset(
+                id = UUID.randomUUID().toString(),
+                name = name,
+                code = code,
+                simSlot = selectedSlot,
+                isCustom = true
+            )
+
+            presetsList.add(newPreset)
+            saveCustomPresets()
+            renderPresets()
+
+            Toast.makeText(this, "Added '$name' preset!", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun setupCustomDialer() {
         val customInput = findViewById<EditText>(R.id.customUssdInput)
         findViewById<Button>(R.id.customDialSim1Btn)?.setOnClickListener {
             val code = customInput?.text?.toString()?.trim()
@@ -168,7 +461,7 @@ class MainActivity : AppCompatActivity() {
         val checkBtn = findViewById<Button>(R.id.checkUpdateBtn)
 
         statusBadge?.text = "Checking..."
-        statusBadge?.setTextColor(android.graphics.Color.parseColor("#38BDF8"))
+        statusBadge?.setTextColor(Color.parseColor("#38BDF8"))
         checkBtn?.isEnabled = false
 
         val savedInstalledTag = prefs.getString("last_installed_release_tag", null)
@@ -196,7 +489,7 @@ class MainActivity : AppCompatActivity() {
 
                 if (release.isNewerVersion) {
                     statusBadge?.text = "Update Available"
-                    statusBadge?.setTextColor(android.graphics.Color.parseColor("#F59E0B"))
+                    statusBadge?.setTextColor(Color.parseColor("#F59E0B"))
                     statusBadge?.setBackgroundResource(R.drawable.bg_status_inactive)
                     downloadBtn?.visibility = View.VISIBLE
                     downloadBtn?.text = "Download & Install ${release.tagName}"
@@ -205,9 +498,8 @@ class MainActivity : AppCompatActivity() {
                     }
                 } else {
                     statusBadge?.text = "Up to date"
-                    statusBadge?.setTextColor(android.graphics.Color.parseColor("#34D399"))
+                    statusBadge?.setTextColor(Color.parseColor("#34D399"))
                     statusBadge?.setBackgroundResource(R.drawable.bg_status_active)
-                    // Still allow re-installing if the user wants
                     downloadBtn?.visibility = View.VISIBLE
                     downloadBtn?.text = "Re-install Latest APK (${release.tagName})"
                     if (!silent) {
@@ -216,7 +508,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }.onFailure { error ->
                 statusBadge?.text = "Check failed"
-                statusBadge?.setTextColor(android.graphics.Color.parseColor("#EF4444"))
+                statusBadge?.setTextColor(Color.parseColor("#EF4444"))
                 if (!silent) {
                     Toast.makeText(
                         this@MainActivity,
@@ -260,7 +552,6 @@ class MainActivity : AppCompatActivity() {
             result.onSuccess { apkFile ->
                 downloadedApk = apkFile
                 prefs.edit().putString("last_installed_release_tag", release.tagName).apply()
-                // Update header text immediately to reflect installed release
                 findViewById<TextView>(R.id.currentVersionText)?.text = "Installed: ${release.tagName}"
                 progressText?.text = "Download complete! Opening installer..."
                 Toast.makeText(this@MainActivity, "Download complete! Starting installer...", Toast.LENGTH_SHORT).show()
@@ -284,17 +575,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateAccessibilityStatus() {
         val statusText = findViewById<TextView>(R.id.accessibilityStatusText) ?: return
-        val enableBtn = findViewById<Button>(R.id.enableAccessibilityBtn)
+        val statusIcon = findViewById<ImageView>(R.id.accessibilityStatusIcon)
+        val toggleBtn = findViewById<Button>(R.id.toggleLaunchersBtn)
         val isEnabled = isAccessibilityServiceEnabled()
 
         if (isEnabled) {
             statusText.text = "● Service Active & Ready"
-            statusText.setTextColor(android.graphics.Color.parseColor("#34D399"))
-            enableBtn?.text = "Accessibility Active (Tap to Manage)"
+            statusText.setTextColor(Color.parseColor("#34D399"))
+            statusIcon?.setColorFilter(Color.parseColor("#34D399"))
+            toggleBtn?.text = "Shortcuts ▾"
         } else {
             statusText.text = "● Setup Required — Tap to Enable"
-            statusText.setTextColor(android.graphics.Color.parseColor("#FBBF24"))
-            enableBtn?.text = "Enable Accessibility Service"
+            statusText.setTextColor(Color.parseColor("#FBBF24"))
+            statusIcon?.setColorFilter(Color.parseColor("#FBBF24"))
+            toggleBtn?.text = "Direct Jump ▾"
         }
     }
 
@@ -333,7 +627,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // 1. Tell our Accessibility Service that this USSD call is initiated by our app
         UssdAccessibilityService.isAppInitiatedCall = true
 
         val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
@@ -363,7 +656,6 @@ class MainActivity : AppCompatActivity() {
                 val targetIccId = targetSubInfo.iccId ?: ""
                 val targetSlotStr = targetSlotIndex.toString()
 
-                // Advanced dual-SIM identifier matcher (supports subIds, physical slots, and ICCIDs)
                 matchedHandle = phoneAccounts.find { handle ->
                     val handleId = (handle.id ?: "").lowercase()
                     handleId == targetSubIdStr ||
@@ -379,7 +671,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Pass subscription ID directly using the active subId (4 for SIM 1, 3 for SIM 2)
         if (targetSubInfo != null) {
             val targetSubId = targetSubInfo.subscriptionId
             intent.putExtra("android.telephony.extra.SUBSCRIPTION_INDEX", targetSubId)
@@ -387,7 +678,6 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("subId", targetSubId)
         }
 
-        // OEM fallbacks for physical slot mapping (Slot 0 for SIM 1, Slot 1 for SIM 2)
         intent.putExtra("com.android.phone.extra.slot", targetSlotIndex)
         intent.putExtra("com.android.phone.force.slot", true)
         intent.putExtra("simSlot", targetSlotIndex)
