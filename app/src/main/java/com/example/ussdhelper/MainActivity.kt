@@ -32,6 +32,26 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.dial777Btn).setOnClickListener {
             dialUssd("*777#", simSlot = 2)
         }
+
+        // Custom USSD dialer buttons
+        val customInput = findViewById<android.widget.EditText>(R.id.customUssdInput)
+        findViewById<Button>(R.id.customDialSim1Btn)?.setOnClickListener {
+            val code = customInput?.text?.toString()?.trim()
+            if (code.isNullOrEmpty()) {
+                android.widget.Toast.makeText(this, "Please enter a USSD code (e.g. *999#)", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                dialUssd(code, simSlot = 1)
+            }
+        }
+
+        findViewById<Button>(R.id.customDialSim2Btn)?.setOnClickListener {
+            val code = customInput?.text?.toString()?.trim()
+            if (code.isNullOrEmpty()) {
+                android.widget.Toast.makeText(this, "Please enter a USSD code (e.g. *777#)", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                dialUssd(code, simSlot = 2)
+            }
+        }
     }
 
     override fun onResume() {
@@ -45,13 +65,13 @@ class MainActivity : AppCompatActivity() {
         val isEnabled = isAccessibilityServiceEnabled()
 
         if (isEnabled) {
-            statusText.text = "● Service is Active & Ready"
-            statusText.setTextColor(android.graphics.Color.parseColor("#4ADE80"))
-            enableBtn.text = "1. Accessibility Service (Active)"
+            statusText.text = "● Service Active & Ready"
+            statusText.setTextColor(android.graphics.Color.parseColor("#34D399"))
+            enableBtn?.text = "Accessibility Active (Tap to Manage)"
         } else {
-            statusText.text = "● Service Not Enabled — Tap below to allow"
+            statusText.text = "● Setup Required — Tap to Enable"
             statusText.setTextColor(android.graphics.Color.parseColor("#FBBF24"))
-            enableBtn.text = "1. Enable Accessibility Service"
+            enableBtn?.text = "Enable Accessibility Service"
         }
     }
 

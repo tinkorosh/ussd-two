@@ -2,28 +2,80 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E1E2E"
+    android:background="#0C0E17"
     android:orientation="vertical"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp"
-    android:paddingTop="32dp"
-    android:paddingBottom="24dp"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="20dp"
     android:fitsSystemWindows="true"
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Header Text -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Top Handle / Indicator -->
+    <View
+        android:layout_width="44dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_drag_handle"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Header Bar with Live Badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="USSD Assistant"
-        android:textColor="#888A9E"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        android:textAllCaps="true"
-        android:letterSpacing="0.08"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_dialpad"
+            android:contentDescription="USSD" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="USSD ASSISTANT"
+            android:textColor="#38BDF8"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.1"
+            android:layout_marginStart="8dp"/>
+
+        <!-- Live indicator pill -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_status_active"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp">
+
+            <ImageView
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:src="@drawable/ic_live_dot"
+                android:contentDescription="Live"
+                android:layout_marginEnd="5dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACTIVE SESSION"
+                android:textColor="#34D399"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <!-- Loading State Layout (Shown while "USSD code running...") -->
     <LinearLayout
@@ -35,20 +87,39 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <ProgressBar
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:indeterminateTint="#3B82F6"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:id="@+id/overlayLoadingText"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Processing USSD request..."
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:background="@drawable/bg_card"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <ProgressBar
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:indeterminateTint="#38BDF8"
+                android:layout_marginBottom="20dp"/>
+
+            <TextView
+                android:id="@+id/overlayLoadingText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connecting with carrier network..."
+                android:textColor="#F8FAFC"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="6dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Please wait while your session is established"
+                android:textColor="#94A3B8"
+                android:textSize="13sp"
+                android:gravity="center"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Main Content Layout (Shown when a menu is parsed) -->
@@ -70,39 +141,75 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/overlayMenuText"
+                <!-- Menu Prompt Card -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Select an option"
-                    android:textColor="#FFFFFF"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:lineSpacingMultiplier="1.25"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="20dp"/>
+                    android:background="@drawable/bg_menu_card"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:layout_marginBottom="16dp">
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CARRIER RESPONSE"
+                        android:textColor="#64748B"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp"/>
+
+                    <TextView
+                        android:id="@+id/overlayMenuText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Select an option"
+                        android:textColor="#F8FAFC"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:lineSpacingMultiplier="1.25"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SELECT AN ACTION"
+                    android:textColor="#94A3B8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginBottom="10dp"/>
+
+                <!-- Container where option buttons are added -->
                 <LinearLayout
                     android:id="@+id/overlayOptionsContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"/>
+
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
 
-    <!-- Red Cancel Button at the bottom -->
+    <!-- Cancel / Dismiss Button at the bottom -->
     <Button
         android:id="@+id/overlayCancelBtn"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:background="@drawable/btn_cancel_rounded"
         android:text="Cancel Session"
-        android:textColor="#FF6B6B"
+        android:textColor="#FCA5A5"
         android:textSize="15sp"
         android:textStyle="bold"
+        android:drawableStart="@drawable/ic_close"
+        android:drawablePadding="8dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:stateListAnimator="@null"
         style="?android:attr/borderlessButtonStyle"
         android:layout_marginTop="12dp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="4dp"/>
 
 </LinearLayout>
