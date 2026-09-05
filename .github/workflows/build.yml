@@ -65,7 +65,7 @@ jobs:
           chmod +x ./gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug -PversionCode=${{ github.run_number }} -PversionName=1.0.${{ github.run_number }} --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -76,6 +76,7 @@ jobs:
           retention-days: 14
 
       - name: Send APK to Telegram
+        if: false # Temporarily disabled per user request (kept for future reference)
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -118,7 +119,7 @@ jobs:
           echo "Successfully sent APK to Telegram!"
 
       - name: Publish GitHub Release (OTA Update)
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

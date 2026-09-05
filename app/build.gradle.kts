@@ -7,12 +7,19 @@ android {
   namespace = "com.example.ussdhelper"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
+  val vCode = (project.findProperty("versionCode") as? String)?.toIntOrNull()
+      ?: System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+      ?: 1
+  val vName = (project.findProperty("versionName") as? String)
+      ?: System.getenv("VERSION_NAME")
+      ?: if (vCode > 1) "1.0.$vCode" else "1.0"
+
   defaultConfig {
     applicationId = "com.example.ussdhelper"
     minSdk = 26
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = vCode
+    versionName = vName
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

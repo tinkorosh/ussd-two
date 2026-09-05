@@ -115,7 +115,12 @@ class MainActivity : AppCompatActivity() {
         val downloadInstallBtn = findViewById<Button>(R.id.downloadInstallBtn)
         val openGithubBtn = findViewById<Button>(R.id.openGithubRepoBtn)
 
-        val currentVersion = "v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})"
+        val savedInstalledTag = prefs.getString("last_installed_release_tag", null)
+        val currentVersion = if (!savedInstalledTag.isNullOrEmpty() && BuildConfig.VERSION_CODE <= 1) {
+            "$savedInstalledTag (Build ${BuildConfig.VERSION_CODE})"
+        } else {
+            "v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})"
+        }
         currentVersionText?.text = "Installed: $currentVersion"
 
         checkUpdateBtn?.setOnClickListener {
@@ -166,8 +171,13 @@ class MainActivity : AppCompatActivity() {
         statusBadge?.setTextColor(android.graphics.Color.parseColor("#38BDF8"))
         checkBtn?.isEnabled = false
 
+        val savedInstalledTag = prefs.getString("last_installed_release_tag", null)
         lifecycleScope.launch {
-            val result = AppUpdater.checkLatestRelease(BuildConfig.VERSION_NAME)
+            val result = AppUpdater.checkLatestRelease(
+                currentVersionName = BuildConfig.VERSION_NAME,
+                currentVersionCode = BuildConfig.VERSION_CODE,
+                lastInstalledTag = savedInstalledTag
+            )
             checkBtn?.isEnabled = true
 
             result.onSuccess { release ->
@@ -249,6 +259,9 @@ class MainActivity : AppCompatActivity() {
 
             result.onSuccess { apkFile ->
                 downloadedApk = apkFile
+                prefs.edit().putString("last_installed_release_tag", release.tagName).apply()
+                // Update header text immediately to reflect installed release
+                findViewById<TextView>(R.id.currentVersionText)?.text = "Installed: ${release.tagName}"
                 progressText?.text = "Download complete! Opening installer..."
                 Toast.makeText(this@MainActivity, "Download complete! Starting installer...", Toast.LENGTH_SHORT).show()
                 AppUpdater.installApk(this@MainActivity, apkFile)

@@ -33,7 +33,11 @@ object AppUpdater {
     /**
      * Checks GitHub for the latest release in the repository.
      */
-    suspend fun checkLatestRelease(currentVersionName: String): Result<ReleaseInfo> = withContext(Dispatchers.IO) {
+    suspend fun checkLatestRelease(
+        currentVersionName: String,
+        currentVersionCode: Int = 1,
+        lastInstalledTag: String? = null
+    ): Result<ReleaseInfo> = withContext(Dispatchers.IO) {
         try {
             val url = URL(RELEASES_API_URL)
             val connection = (url.openConnection() as HttpURLConnection).apply {
@@ -83,7 +87,7 @@ object AppUpdater {
                 )
             }
 
-            val isNewer = isRemoteVersionNewer(tagName, currentVersionName)
+            val isNewer = isRemoteVersionNewer(tagName, currentVersionName, currentVersionCode, lastInstalledTag)
 
             Result.success(
                 ReleaseInfo(
@@ -205,16 +209,33 @@ object AppUpdater {
     }
 
     /**
-     * Compares remote semantic version string against current version name.
+     * Compares remote semantic version string against current version name and code.
      */
-    private fun isRemoteVersionNewer(remoteTag: String, localVersion: String): Boolean {
+    private fun isRemoteVersionNewer(
+        remoteTag: String,
+        localVersion: String,
+        localVersionCode: Int = 1,
+        lastInstalledTag: String? = null
+    ): Boolean {
         val cleanRemote = remoteTag.removePrefix("v").removePrefix("V").trim()
         val cleanLocal = localVersion.removePrefix("v").removePrefix("V").trim()
 
         if (cleanRemote.equals(cleanLocal, ignoreCase = true)) return false
 
+        if (!lastInstalledTag.isNullOrEmpty()) {
+            val cleanLastInstalled = lastInstalledTag.removePrefix("v").removePrefix("V").trim()
+            if (cleanRemote.equals(cleanLastInstalled, ignoreCase = true)) return false
+        }
+
         val remoteParts = cleanRemote.split(".").mapNotNull { it.toIntOrNull() }
         val localParts = cleanLocal.split(".").mapNotNull { it.toIntOrNull() }
+
+        // If remote tag is e.g. 1.0.6 where 6 is build number, and local is 1.0 with build 6+
+        if (remoteParts.size == 3 && localParts.size == 2 && localVersionCode > 1) {
+            if (remoteParts[0] == localParts[0] && remoteParts[1] == localParts[1]) {
+                return remoteParts[2] > localVersionCode
+            }
+        }
 
         val length = maxOf(remoteParts.size, localParts.size)
         for (i in 0 until length) {
@@ -224,7 +245,6 @@ object AppUpdater {
             if (r < l) return false
         }
 
-        // If numeric parts are equal or unparseable, check string inequality
-        return cleanRemote != cleanLocal
+        return false
     }
 }
