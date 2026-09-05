@@ -29,26 +29,21 @@ jobs:
 
       - name: Prepare Debug Keystore
         run: |
+          echo "Restoring permanent debug keystore..."
           if [ -f "debug.keystore.base64" ] && [ -s "debug.keystore.base64" ]; then
-            echo "Decoding debug keystore from debug.keystore.base64..."
             base64 -d debug.keystore.base64 > debug.keystore 2>/dev/null || base64 --decode debug.keystore.base64 > debug.keystore
           fi
 
           if [ ! -f "debug.keystore" ] || [ ! -s "debug.keystore" ]; then
-            echo "debug.keystore not found or empty, creating keystore with keytool..."
-            keytool -genkey -v \
-              -keystore debug.keystore \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -dname "CN=Android Debug,O=Android,C=US"
+            echo "Restoring from fixed permanent keystore base64..."
+            cat << 'EOF' | base64 -d > debug.keystore
+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
+EOF
           fi
 
-          echo "Verified debug keystore:"
+          echo "Verified fixed permanent debug keystore:"
           ls -lh debug.keystore
+          md5sum debug.keystore
 
       - name: Prepare Environment Secrets
         run: |

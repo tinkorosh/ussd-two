@@ -171,7 +171,42 @@
                         android:lineSpacingMultiplier="1.25"/>
                 </LinearLayout>
 
+                <!-- Quick Confirm Card (Shown when carrier says "To confirm press 1" or similar) -->
+                <LinearLayout
+                    android:id="@+id/quickConfirmCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_card"
+                    android:padding="12dp"
+                    android:layout_marginBottom="14dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CONFIRMATION DETECTED"
+                        android:textColor="#34D399"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp"/>
+
+                    <Button
+                        android:id="@+id/btnQuickConfirmOne"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:background="@drawable/bg_confirm_btn"
+                        android:text="✓ CONFIRM (PRESS 1)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:stateListAnimator="@null"
+                        style="?android:attr/borderlessButtonStyle"/>
+                </LinearLayout>
+
                 <TextView
+                    android:id="@+id/actionsSectionTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="SELECT AN ACTION"
@@ -188,6 +223,285 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"/>
+
+                <!-- Custom Input / PIN Entry Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical"
+                    android:padding="14dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:id="@+id/customInputTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="CUSTOM INPUT / PIN ENTRY"
+                            android:textColor="#38BDF8"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.08"/>
+
+                        <TextView
+                            android:id="@+id/toggleKeypadBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="KEYPAD ▾"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:padding="4dp"/>
+                    </LinearLayout>
+
+                    <!-- Input row with text and send button -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <EditText
+                            android:id="@+id/overlayCustomInput"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_input_field"
+                            android:hint="Enter PIN, 1, or amount..."
+                            android:textColorHint="#64748B"
+                            android:textColor="#F8FAFC"
+                            android:textSize="15sp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:inputType="text"
+                            android:singleLine="true"
+                            android:imeOptions="actionSend"/>
+
+                        <Button
+                            android:id="@+id/overlaySendCustomBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:minWidth="76dp"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_button_accent"
+                            android:text="SEND"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:stateListAnimator="@null"
+                            style="?android:attr/borderlessButtonStyle"/>
+                    </LinearLayout>
+
+                    <!-- Built-in Numeric Keypad (1-9, *, 0, #, Backspace) -->
+                    <LinearLayout
+                        android:id="@+id/keypadContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="12dp"
+                        android:visibility="visible">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="8dp">
+
+                            <Button
+                                android:id="@+id/keypad1"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="1"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypad2"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="2"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypad3"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="3"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="8dp">
+
+                            <Button
+                                android:id="@+id/keypad4"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="4"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypad5"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="5"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypad6"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="6"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="8dp">
+
+                            <Button
+                                android:id="@+id/keypad7"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="7"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypad8"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="8"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypad9"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="9"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/keypadStar"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="*"
+                                android:textColor="#38BDF8"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypad0"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="0"
+                                android:textColor="#F8FAFC"
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+
+                            <Button
+                                android:id="@+id/keypadBackspace"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_keypad_btn"
+                                android:text="⌫"
+                                android:textColor="#FCA5A5"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:stateListAnimator="@null"
+                                style="?android:attr/borderlessButtonStyle"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
 
             </LinearLayout>
         </ScrollView>
