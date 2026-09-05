@@ -16,6 +16,9 @@
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Preserve USSD Helper classes and services
+-keep class com.example.ussdhelper.** { *; }
+-keepclassmembers class * extends android.app.Activity {
+    public void *(android.view.View);
+}
+-dontwarn com.example.ussdhelper.**

@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         prefs = getSharedPreferences("ussd_prefs", Context.MODE_PRIVATE)
 
         setupBottomNavigation()
-        setupAccessibilityBridgeAndTestButtons()
+        setupAccessibilitySection()
         setupPresetsSystem()
         setupCustomDialer()
         setupSettingsAndUpdater()
@@ -94,97 +94,50 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupAccessibilityBridgeAndTestButtons() {
-        val toggleLaunchersBtn = findViewById<Button>(R.id.toggleLaunchersBtn)
-        val testLaunchersContainer = findViewById<View>(R.id.testLaunchersContainer)
-        val accessibilityCard = findViewById<View>(R.id.accessibilityCard)
-
-        val toggleAction = {
-            if (testLaunchersContainer.visibility == View.VISIBLE) {
-                testLaunchersContainer.visibility = View.GONE
-                toggleLaunchersBtn?.text = if (isAccessibilityServiceEnabled()) "Shortcuts ▾" else "Direct Jump ▾"
-            } else {
-                testLaunchersContainer.visibility = View.VISIBLE
-                toggleLaunchersBtn?.text = "Hide ▲"
+    private fun setupAccessibilitySection() {
+        findViewById<Button>(R.id.btnOpenAccessibilitySettings)?.setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            } catch (e: Exception) {
+                Toast.makeText(this, "Could not open settings: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
 
-        toggleLaunchersBtn?.setOnClickListener { toggleAction() }
-        accessibilityCard?.setOnClickListener {
-            if (!isAccessibilityServiceEnabled() && testLaunchersContainer.visibility != View.VISIBLE) {
-                toggleAction()
-            }
-        }
-
-        // Test Button 1: Direct Service Page (target fragment key)
-        findViewById<Button>(R.id.btnTestDirectService)?.setOnClickListener {
-            val componentName = ComponentName(packageName, UssdAccessibilityService::class.java.name).flattenToString()
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                putExtra(":settings:fragment_args_key", componentName)
-                val bundle = Bundle().apply {
-                    putString(":settings:fragment_args_key", componentName)
-                }
-                putExtra(":settings:show_fragment_args", bundle)
-            }
-            tryLaunchIntent(intent, "Direct Service page")
-        }
-
-        // Test Button 2: Installed / Downloaded Services Subpage
-        findViewById<Button>(R.id.btnTestInstalledServices)?.setOnClickListener {
-            val candidates = listOf(
-                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.Settings\$AccessibilityInstalledServiceActivity")),
-                Intent("android.settings.ACCESSIBILITY_DETAILS_SETTINGS").apply {
+        findViewById<Button>(R.id.btnOpenAppDetails)?.setOnClickListener {
+            try {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.parse("package:$packageName")
-                },
-                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.accessibility.InstalledServicesActivity")),
-                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.accessibility.InstalledServices")),
-                Intent("com.transsion.settings.accessibility.INSTALLED_SERVICES"),
-                Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.accessibility.AccessibilityInstalledServicesSettings"))
-            )
-
-            var launched = false
-            for (candidate in candidates) {
-                try {
-                    if (candidate.resolveActivity(packageManager) != null) {
-                        startActivity(candidate)
-                        Toast.makeText(this, "Opening Installed Services subpage", Toast.LENGTH_SHORT).show()
-                        launched = true
-                        break
-                    }
-                } catch (_: Exception) {}
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Could not open app details: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
-
-            if (!launched) {
-                tryLaunchIntent(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), "General Accessibility (Installed Services fallback)")
-            }
-        }
-
-        // Test Button 3: App Details (Allow Restricted Settings on Android 13+)
-        findViewById<Button>(R.id.btnTestAppDetails)?.setOnClickListener {
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.parse("package:$packageName")
-            }
-            tryLaunchIntent(intent, "App Details (Allow Restricted Settings)")
-        }
-
-        // Test Button 4: General Accessibility Settings
-        findViewById<Button>(R.id.btnTestGeneralSettings)?.setOnClickListener {
-            tryLaunchIntent(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), "General Accessibility Settings")
         }
     }
 
-    private fun tryLaunchIntent(intent: Intent, label: String) {
-        try {
-            startActivity(intent)
-            Toast.makeText(this, "Opening: $label", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            try {
-                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                Toast.makeText(this, "Falling back to Accessibility Settings", Toast.LENGTH_SHORT).show()
-            } catch (err: Exception) {
-                Toast.makeText(this, "Could not open settings: ${err.localizedMessage}", Toast.LENGTH_LONG).show()
+    private fun showAccessibilityRequiredDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Accessibility Permission Required")
+            .setMessage("USSD Assistant requires accessibility permissions to read carrier menu dialogs and show 1-tap touch buttons on your screen.\n\nPlease enable USSD Assistant in Accessibility settings to start using the assistant.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                try {
+                    startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Could not open settings: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
             }
-        }
+            .setNeutralButton("App Details (Allow)") { _, _ ->
+                try {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Could not open app details: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun setupPresetsSystem() {
@@ -199,19 +152,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadPresets() {
         presetsList.clear()
 
-        // 1. Built-in defaults (incorporating any user-saved PIN overrides)
-        val pin999 = prefs.getString("pin_for_*999#", "") ?: ""
-        val pin777 = prefs.getString("pin_for_*777#", "") ?: ""
-        val pin804 = prefs.getString("pin_for_*804#", "") ?: ""
-        val pin127 = prefs.getString("pin_for_*127#", "") ?: ""
-
-        presetsList.add(QuickPreset("def_999", "Ethio Telecom Portal", "*999#", simSlot = 1, pin = pin999, isCustom = false))
-        presetsList.add(QuickPreset("def_777", "Airtime & Bundles", "*777#", simSlot = 2, pin = pin777, isCustom = false))
-        presetsList.add(QuickPreset("def_804", "Check Account Balance", "*804#", simSlot = 1, pin = pin804, isCustom = false))
-        presetsList.add(QuickPreset("def_127", "Check Package Status", "*127#", simSlot = 1, pin = pin127, isCustom = false))
-
-        // 2. User-added custom presets
-        val jsonStr = prefs.getString("custom_presets_json", null)
+        val jsonStr = prefs.getString("all_presets_json", null)
         if (!jsonStr.isNullOrEmpty()) {
             try {
                 val array = JSONArray(jsonStr)
@@ -222,11 +163,11 @@ class MainActivity : AppCompatActivity() {
                     presetsList.add(
                         QuickPreset(
                             id = obj.optString("id", UUID.randomUUID().toString()),
-                            name = obj.optString("name", "Custom Preset"),
+                            name = obj.optString("name", "Preset"),
                             code = code,
                             simSlot = obj.optInt("simSlot", 1),
                             pin = savedPin,
-                            isCustom = true
+                            isCustom = obj.optBoolean("isCustom", true)
                         )
                     )
                 }
@@ -234,25 +175,40 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+
+        // If not initialized yet, populate defaults
+        if (presetsList.isEmpty() && !prefs.getBoolean("presets_initialized", false)) {
+            val pin999 = prefs.getString("pin_for_*999#", "") ?: ""
+            val pin777 = prefs.getString("pin_for_*777#", "") ?: ""
+            val pin804 = prefs.getString("pin_for_*804#", "") ?: ""
+            val pin127 = prefs.getString("pin_for_*127#", "") ?: ""
+
+            presetsList.add(QuickPreset("def_999", "Ethio Telecom Portal", "*999#", simSlot = 1, pin = pin999, isCustom = false))
+            presetsList.add(QuickPreset("def_777", "Airtime & Bundles", "*777#", simSlot = 2, pin = pin777, isCustom = false))
+            presetsList.add(QuickPreset("def_804", "Check Account Balance", "*804#", simSlot = 1, pin = pin804, isCustom = false))
+            presetsList.add(QuickPreset("def_127", "Check Package Status", "*127#", simSlot = 1, pin = pin127, isCustom = false))
+            prefs.edit().putBoolean("presets_initialized", true).apply()
+            savePresets()
+        }
     }
 
-    private fun saveCustomPresets() {
-        val customPresets = presetsList.filter { it.isCustom }
+    private fun savePresets() {
         val array = JSONArray()
-        for (preset in customPresets) {
+        for (preset in presetsList) {
             val obj = JSONObject().apply {
                 put("id", preset.id)
                 put("name", preset.name)
                 put("code", preset.code)
                 put("simSlot", preset.simSlot)
                 put("pin", preset.pin)
+                put("isCustom", preset.isCustom)
             }
             array.put(obj)
             if (preset.pin.isNotEmpty()) {
                 prefs.edit().putString("pin_for_${preset.code}", preset.pin).apply()
             }
         }
-        prefs.edit().putString("custom_presets_json", array.toString()).apply()
+        prefs.edit().putString("all_presets_json", array.toString()).apply()
     }
 
     private fun renderPresets() {
@@ -269,7 +225,6 @@ class MainActivity : AppCompatActivity() {
             val pinBadge = itemView.findViewById<TextView>(R.id.presetPinBadge)
             val dialBtn = itemView.findViewById<Button>(R.id.presetDialBtn)
             val editBtn = itemView.findViewById<ImageButton>(R.id.presetEditBtn)
-            val deleteBtn = itemView.findViewById<ImageButton>(R.id.presetDeleteBtn)
 
             nameText.text = preset.name
             codeText.text = preset.code
@@ -300,37 +255,21 @@ class MainActivity : AppCompatActivity() {
                 pinBadge.visibility = View.GONE
             }
 
-            // Dial button: STRICTLY labeled "Dial" with vibrant emerald styling
+            // Dial button: STRICTLY labeled "Dial"
             dialBtn.text = "Dial"
             dialBtn.setOnClickListener {
+                if (!isAccessibilityServiceEnabled()) {
+                    showAccessibilityRequiredDialog()
+                    return@setOnClickListener
+                }
                 UssdAccessibilityService.activeDialedCode = preset.code
                 UssdAccessibilityService.activeDialedPin = preset.pin
                 dialUssdWithPreference(preset.code, defaultSimSlot = if (preset.simSlot != 0) preset.simSlot else 1)
             }
 
-            // Edit button: allows editing name, code, SIM slot, and PIN
+            // Edit button: allows editing name, code, SIM slot, PIN, and deleting any preset
             editBtn.setOnClickListener {
                 showAddOrEditPresetDialog(existing = preset)
-            }
-
-            // Delete button: visible for custom presets
-            if (preset.isCustom) {
-                deleteBtn.visibility = View.VISIBLE
-                deleteBtn.setOnClickListener {
-                    AlertDialog.Builder(this)
-                        .setTitle("Delete Preset")
-                        .setMessage("Are you sure you want to delete '${preset.name}' (${preset.code})?")
-                        .setPositiveButton("Delete") { _, _ ->
-                            presetsList.removeAll { it.id == preset.id }
-                            saveCustomPresets()
-                            renderPresets()
-                            Toast.makeText(this, "Preset deleted", Toast.LENGTH_SHORT).show()
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .show()
-                }
-            } else {
-                deleteBtn.visibility = View.GONE
             }
 
             container.addView(itemView)
@@ -346,8 +285,16 @@ class MainActivity : AppCompatActivity() {
         val radioSim1 = dialogView.findViewById<RadioButton>(R.id.dialogRadioSim1)
         val radioSim2 = dialogView.findViewById<RadioButton>(R.id.dialogRadioSim2)
         val radioDefault = dialogView.findViewById<RadioButton>(R.id.dialogRadioDefault)
+        val deleteBtn = dialogView.findViewById<Button>(R.id.dialogDeleteBtn)
         val cancelBtn = dialogView.findViewById<Button>(R.id.dialogCancelBtn)
         val saveBtn = dialogView.findViewById<Button>(R.id.dialogSaveBtn)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         if (existing != null) {
             titleText.text = "Edit Preset & PIN"
@@ -359,16 +306,27 @@ class MainActivity : AppCompatActivity() {
                 2 -> radioSim2.isChecked = true
                 else -> radioDefault.isChecked = true
             }
+
+            // Any preset is deletable!
+            deleteBtn?.visibility = View.VISIBLE
+            deleteBtn?.setOnClickListener {
+                AlertDialog.Builder(this)
+                    .setTitle("Delete Preset")
+                    .setMessage("Are you sure you want to delete '${existing.name}' (${existing.code})?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        presetsList.removeAll { it.id == existing.id }
+                        savePresets()
+                        renderPresets()
+                        Toast.makeText(this, "Preset '${existing.name}' deleted", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
         } else {
             titleText.text = "Add Quick Action Preset"
+            deleteBtn?.visibility = View.GONE
         }
-
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create()
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         cancelBtn.setOnClickListener { dialog.dismiss() }
 
@@ -404,13 +362,7 @@ class MainActivity : AppCompatActivity() {
                 existing.code = code
                 existing.simSlot = selectedSlot
                 existing.pin = pin
-
-                // Save PIN in persistent storage for this code
                 prefs.edit().putString("pin_for_$code", pin).apply()
-
-                if (existing.isCustom) {
-                    saveCustomPresets()
-                }
             } else {
                 val newPreset = QuickPreset(
                     id = UUID.randomUUID().toString(),
@@ -422,9 +374,9 @@ class MainActivity : AppCompatActivity() {
                 )
                 presetsList.add(newPreset)
                 prefs.edit().putString("pin_for_$code", pin).apply()
-                saveCustomPresets()
             }
 
+            savePresets()
             renderPresets()
             val toastMsg = if (pin.isNotEmpty()) "Saved with PIN auto-fill!" else "Preset saved!"
             Toast.makeText(this, toastMsg, Toast.LENGTH_SHORT).show()
@@ -440,6 +392,11 @@ class MainActivity : AppCompatActivity() {
         val customDialBtn = findViewById<Button>(R.id.customDialBtn)
 
         customDialBtn?.setOnClickListener {
+            if (!isAccessibilityServiceEnabled()) {
+                showAccessibilityRequiredDialog()
+                return@setOnClickListener
+            }
+
             val code = customInput?.text?.toString()?.trim()
             if (code.isNullOrEmpty()) {
                 Toast.makeText(this, "Please enter a USSD code (e.g. *999#)", Toast.LENGTH_SHORT).show()
@@ -610,21 +567,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateAccessibilityStatus() {
-        val statusText = findViewById<TextView>(R.id.accessibilityStatusText) ?: return
-        val statusIcon = findViewById<ImageView>(R.id.accessibilityStatusIcon)
-        val toggleBtn = findViewById<Button>(R.id.toggleLaunchersBtn)
+        val accessibilityCard = findViewById<View>(R.id.accessibilityCard)
         val isEnabled = isAccessibilityServiceEnabled()
 
         if (isEnabled) {
-            statusText.text = "● Service Active & Ready"
-            statusText.setTextColor(Color.parseColor("#34D399"))
-            statusIcon?.setColorFilter(Color.parseColor("#34D399"))
-            toggleBtn?.text = "Shortcuts ▾"
+            // When active, completely remove the service management UI from the page!
+            accessibilityCard?.visibility = View.GONE
         } else {
-            statusText.text = "● Setup Required — Tap to Enable"
-            statusText.setTextColor(Color.parseColor("#FBBF24"))
-            statusIcon?.setColorFilter(Color.parseColor("#FBBF24"))
-            toggleBtn?.text = "Direct Jump ▾"
+            // When not active, show the setup gate banner
+            accessibilityCard?.visibility = View.VISIBLE
         }
     }
 
@@ -649,6 +600,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun dialUssd(ussdCode: String, simSlot: Int) {
+        if (!isAccessibilityServiceEnabled()) {
+            showAccessibilityRequiredDialog()
+            return
+        }
+
         val permissions = arrayOf(
             Manifest.permission.CALL_PHONE,
             Manifest.permission.READ_PHONE_STATE

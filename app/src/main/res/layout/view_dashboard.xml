@@ -31,11 +31,10 @@
                 android:gravity="center">
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_phone"
-                    android:tint="#38BDF8"
-                    android:contentDescription="USSD Icon" />
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_app_logo"
+                    android:contentDescription="USSD Assistant Logo" />
             </LinearLayout>
 
             <LinearLayout
@@ -78,153 +77,149 @@
                 android:paddingBottom="4dp"/>
         </LinearLayout>
 
-        <!-- COMPACT ACCESSIBILITY STATUS BANNER -->
+        <!-- ACCESSIBILITY PERMISSION GATE (Visible ONLY when service is OFF; removed when ON) -->
         <LinearLayout
             android:id="@+id/accessibilityCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card"
             android:orientation="vertical"
-            android:padding="14dp"
-            android:layout_marginBottom="16dp">
+            android:padding="18dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
 
-            <!-- Compact Status Row -->
+            <!-- Card Header -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
 
-                <ImageView
-                    android:id="@+id/accessibilityStatusIcon"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_shield_check"
-                    android:tint="#34D399"
-                    android:contentDescription="Accessibility Status" />
+                <LinearLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_icon_badge"
+                    android:gravity="center">
 
-                <TextView
-                    android:id="@+id/accessibilityStatusText"
+                    <ImageView
+                        android:id="@+id/accessibilityStatusIcon"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_shield_check"
+                        android:tint="#F59E0B"
+                        android:contentDescription="Accessibility Alert" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="● Service Active &amp; Ready"
-                    android:textColor="#34D399"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="10dp"/>
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
 
-                <!-- Toggle Test Launchers Button -->
-                <Button
-                    android:id="@+id/toggleLaunchersBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:background="@drawable/bg_button_test"
-                    app:backgroundTint="@null"
-                    android:text="Direct Jump ▾"
-                    android:textColor="#38BDF8"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:stateListAnimator="@null"
-                    style="?android:attr/borderlessButtonStyle"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SERVICE SETUP REQUIRED"
+                        android:textColor="#F59E0B"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06"/>
+
+                    <TextView
+                        android:id="@+id/accessibilityStatusText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Turn On USSD Assistant"
+                        android:textColor="#F8FAFC"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
             </LinearLayout>
 
-            <!-- Test Launchers Section (Simplified toggling options) -->
-            <LinearLayout
-                android:id="@+id/testLaunchersContainer"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="To detect carrier menus and display 1-tap touch buttons on your screen, Android requires the Accessibility Service to be turned on."
+                android:textColor="#94A3B8"
+                android:textSize="13sp"
+                android:lineSpacingMultiplier="1.25"
+                android:layout_marginBottom="14dp"/>
+
+            <!-- 3 Step Quick Guide Box -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_preset_item"
                 android:orientation="vertical"
-                android:layout_marginTop="12dp"
-                android:visibility="gone">
+                android:padding="12dp"
+                android:layout_marginBottom="16dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tap to test which shortcut opens directly to the toggle on your phone:"
-                    android:textColor="#94A3B8"
-                    android:textSize="11sp"
-                    android:layout_marginBottom="8dp"/>
+                    android:text="1. Tap 'Open Accessibility Settings' below."
+                    android:textColor="#E2E8F0"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"/>
 
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="6dp">
+                    android:text="2. Tap 'Installed Services' or 'Downloaded Apps'."
+                    android:textColor="#E2E8F0"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"/>
 
-                    <!-- Test Button 1: Direct Service Toggle Target -->
-                    <Button
-                        android:id="@+id/btnTestDirectService"
-                        android:layout_width="0dp"
-                        android:layout_height="38dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_button_test"
-                        app:backgroundTint="@null"
-                        android:text="Direct Service"
-                        android:textColor="#38BDF8"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_marginEnd="4dp"
-                        android:stateListAnimator="@null"
-                        style="?android:attr/borderlessButtonStyle"/>
-
-                    <!-- Test Button 2: Installed Services Subpage -->
-                    <Button
-                        android:id="@+id/btnTestInstalledServices"
-                        android:layout_width="0dp"
-                        android:layout_height="38dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_button_test"
-                        app:backgroundTint="@null"
-                        android:text="Installed Apps"
-                        android:textColor="#C084FC"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_marginStart="4dp"
-                        android:stateListAnimator="@null"
-                        style="?android:attr/borderlessButtonStyle"/>
-                </LinearLayout>
-
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:text="3. Select 'USSD Assistant' and toggle it ON."
+                    android:textColor="#34D399"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
 
-                    <!-- Test Button 3: App Details (Unrestrict settings) -->
-                    <Button
-                        android:id="@+id/btnTestAppDetails"
-                        android:layout_width="0dp"
-                        android:layout_height="38dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_button_test"
-                        app:backgroundTint="@null"
-                        android:text="App Details (Allow)"
-                        android:textColor="#FBBF24"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_marginEnd="4dp"
-                        android:stateListAnimator="@null"
-                        style="?android:attr/borderlessButtonStyle"/>
-
-                    <!-- Test Button 4: Standard General Accessibility -->
-                    <Button
-                        android:id="@+id/btnTestGeneralSettings"
-                        android:layout_width="0dp"
-                        android:layout_height="38dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_button_test"
-                        app:backgroundTint="@null"
-                        android:text="General Settings"
-                        android:textColor="#94A3B8"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_marginStart="4dp"
-                        android:stateListAnimator="@null"
-                        style="?android:attr/borderlessButtonStyle"/>
-                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="* Android 13+: If the toggle is restricted/greyed out, tap 'App Details' below, tap 3 dots in top corner, and choose 'Allow restricted settings'."
+                    android:textColor="#64748B"
+                    android:textSize="11sp"/>
             </LinearLayout>
+
+            <!-- Action Buttons -->
+            <Button
+                android:id="@+id/btnOpenAccessibilitySettings"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/bg_button_primary"
+                app:backgroundTint="@null"
+                android:text="Open Accessibility Settings"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:drawableStart="@drawable/ic_shield_check"
+                android:drawablePadding="8dp"
+                android:drawableTint="#FFFFFF"
+                android:stateListAnimator="@null"
+                android:layout_marginBottom="8dp"
+                style="?android:attr/borderlessButtonStyle"/>
+
+            <Button
+                android:id="@+id/btnOpenAppDetails"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_button_test"
+                app:backgroundTint="@null"
+                android:text="App Details (Allow Restricted Settings)"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:stateListAnimator="@null"
+                style="?android:attr/borderlessButtonStyle"/>
+
         </LinearLayout>
 
         <!-- QUICK ACTION PRESETS SECTION -->

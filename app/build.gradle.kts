@@ -21,6 +21,9 @@ android {
     versionCode = vCode
     versionName = vName
 
+    // Size shrinking: retain only English resources to eliminate unused locales
+    resourceConfigurations.addAll(listOf("en"))
+
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
@@ -42,12 +45,29 @@ android {
 
   buildTypes {
     release {
-      isCrunchPngs = false
-      isMinifyEnabled = false
+      isCrunchPngs = true
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
     debug { signingConfig = signingConfigs.getByName("debugConfig") }
+  }
+
+  packaging {
+    resources {
+      excludes += setOf(
+        "META-INF/DEPENDENCIES",
+        "META-INF/LICENSE",
+        "META-INF/LICENSE.txt",
+        "META-INF/license.txt",
+        "META-INF/NOTICE",
+        "META-INF/NOTICE.txt",
+        "META-INF/notice.txt",
+        "META-INF/ASL2.0",
+        "META-INF/*.kotlin_module"
+      )
+    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
