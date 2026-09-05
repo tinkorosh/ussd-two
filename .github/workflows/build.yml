@@ -1,0 +1,116 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Export APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare Debug Keystore
+        run: |
+          if [ -f "debug.keystore.base64" ] && [ -s "debug.keystore.base64" ]; then
+            echo "Decoding debug keystore from debug.keystore.base64..."
+            base64 -d debug.keystore.base64 > debug.keystore 2>/dev/null || base64 --decode debug.keystore.base64 > debug.keystore
+          fi
+
+          if [ ! -f "debug.keystore" ] || [ ! -s "debug.keystore" ]; then
+            echo "debug.keystore not found or empty, creating keystore with keytool..."
+            keytool -genkey -v \
+              -keystore debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+          echo "Verified debug keystore:"
+          ls -lh debug.keystore
+
+      - name: Prepare Environment Secrets
+        run: |
+          if [ ! -f ".env" ] && [ -f ".env.example" ]; then
+            cp .env.example .env
+          fi
+
+      - name: Make Gradlew Executable
+        run: |
+          if [ ! -f "./gradlew" ]; then
+            echo "gradlew not found, generating Gradle wrapper..."
+            gradle wrapper
+          fi
+          chmod +x ./gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: USSD_Flow
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Send APK to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "::warning::Telegram bot token or chat ID is not set (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID). Skipping Telegram upload."
+            exit 0
+          fi
+
+          CLEAN_TOKEN="${TELEGRAM_BOT_TOKEN#bot}"
+          CLEAN_CHAT_ID=$(echo "$TELEGRAM_CHAT_ID" | tr -d ' "')
+
+          APK_PATH=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ] || [ ! -f "$APK_PATH" ]; then
+            echo "Error: No APK found to send."
+            exit 1
+          fi
+
+          # Name the APK as USSD_Flow.apk for clean Telegram delivery
+          TARGET_APK="USSD_Flow.apk"
+          cp "$APK_PATH" "$TARGET_APK"
+
+          echo "Sending $TARGET_APK to Telegram channel..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            --connect-timeout 60 \
+            --max-time 300 \
+            -X POST "https://api.telegram.org/bot${CLEAN_TOKEN}/sendDocument" \
+            -F "chat_id=${CLEAN_CHAT_ID}" \
+            -F "document=@${TARGET_APK}" \
+            -F "caption=📦 USSD Flow APK Build (${{ github.ref_name }} • ${{ github.sha }})")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "Error: Failed to send to Telegram (HTTP $HTTP_CODE): $BODY"
+            exit 1
+          fi
+
+          echo "Successfully sent APK to Telegram!"

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">USSD Helper</string>
+    <string name="accessibility_service_description">Enables USSD Helper to seamlessly intercept, style, and automate USSD menus so standard system dialogs are completely hidden behind a sleek interface.</string>
+</resources>

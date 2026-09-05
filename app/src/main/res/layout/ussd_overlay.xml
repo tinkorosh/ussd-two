@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/overlayRootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/overlay_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="36dp"
+        android:paddingBottom="24dp">
+
+        <!-- Top Header Status Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <View
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_badge_sim1"
+                android:backgroundTint="@color/accent_green" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="USSD AUTOMATION ACTIVE"
+                android:textColor="@color/accent_green"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:id="@+id/overlayCarrierBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_sim1"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:text="SIM 1"
+                android:textColor="@color/primary_blue_light"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <!-- Close Overlay Button -->
+            <ImageButton
+                android:id="@+id/btnOverlayClose"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                app:tint="@color/text_secondary"
+                android:contentDescription="Close Overlay" />
+        </LinearLayout>
+
+        <!-- Main Card Container -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="@color/overlay_card"
+            app:strokeColor="@color/overlay_border"
+            app:strokeWidth="1dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Dial Code Monospace Chip -->
+                <TextView
+                    android:id="@+id/overlayCodeChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_code_chip"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:text="*999#"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:fontFamily="monospace"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Loading State Layout -->
+                <LinearLayout
+                    android:id="@+id/loadingLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:indeterminateTint="@color/primary_blue"
+                        android:layout_marginBottom="20dp" />
+
+                    <TextView
+                        android:id="@+id/loadingStatusTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Connecting to Carrier..."
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/loadingStatusSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="System USSD dialog is covered and secured"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="13sp"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- Content Layout (Menu & Results) -->
+                <LinearLayout
+                    android:id="@+id/contentLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!-- Menu Title or Response Header -->
+                    <TextView
+                        android:id="@+id/overlayMenuText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Select an Option"
+                        android:textColor="@color/text_primary"
+                        android:textSize="19sp"
+                        android:textStyle="bold"
+                        android:lineSpacingExtra="4dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Scrollable Options List -->
+                    <androidx.core.widget.NestedScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:fillViewport="true"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:id="@+id/overlayOptionsContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                            <!-- Informational / Single Response Result Card (When no numbered options) -->
+                            <LinearLayout
+                                android:id="@+id/overlayInfoResultLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnCopyMessage"
+                                    style="@style/Widget.Material3.Button.OutlinedButton"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="Copy Message Text"
+                                    android:textColor="@color/primary_blue_light"
+                                    app:strokeColor="@color/primary_blue"
+                                    app:cornerRadius="12dp"
+                                    android:layout_marginBottom="10dp" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnDismissOk"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="OK / Done"
+                                    android:textColor="@color/white"
+                                    android:backgroundTint="@color/primary_blue"
+                                    app:cornerRadius="12dp" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </androidx.core.widget.NestedScrollView>
+
+                    <!-- Text Input Section (When the USSD prompt expects an input text/PIN/amount) -->
+                    <LinearLayout
+                        android:id="@+id/overlayInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="12dp"
+                        android:visibility="gone">
+
+                        <EditText
+                            android:id="@+id/overlayInputField"
+                            android:layout_width="0dp"
+                            android:layout_height="50dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card_elevated"
+                            android:hint="Type reply..."
+                            android:textColorHint="@color/text_tertiary"
+                            android:textColor="@color/text_primary"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:textSize="15sp"
+                            android:inputType="text"
+                            android:imeOptions="actionSend" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/overlaySendInputBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:layout_marginStart="8dp"
+                            android:text="Send"
+                            android:textColor="@color/white"
+                            android:backgroundTint="@color/primary_blue"
+                            app:cornerRadius="12dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bottom Cancel Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/overlayCancelBtn"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:backgroundTint="@color/accent_rose_container"
+            app:strokeColor="@color/accent_rose"
+            app:strokeWidth="1dp"
+            app:cornerRadius="14dp"
+            android:text="Cancel Session"
+            android:textColor="@color/accent_rose"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</FrameLayout>

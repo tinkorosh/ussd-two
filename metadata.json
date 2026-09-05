@@ -1,0 +1,6 @@
+{
+  "name": "USSD Helper",
+  "description": "Android USSD automation and accessibility helper for quick dialing and dual-SIM management",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
