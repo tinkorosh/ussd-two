@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_preset_item"
@@ -36,14 +37,33 @@
             android:textSize="15sp"
             android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/presetCodeText"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="*999#"
-            android:textColor="#94A3B8"
-            android:textSize="12sp"
-            android:layout_marginTop="2dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/presetCodeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*999#"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"/>
+
+            <!-- PIN indicator badge -->
+            <TextView
+                android:id="@+id/presetPinBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="● PIN SET"
+                android:textColor="#F59E0B"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginStart="8dp"
+                android:visibility="gone"/>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -52,12 +72,13 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <!-- Dial button -->
+        <!-- Dial button (strictly labeled Dial with vibrant emerald styling) -->
         <Button
             android:id="@+id/presetDialBtn"
             android:layout_width="wrap_content"
             android:layout_height="38dp"
-            android:background="@drawable/bg_button_sim1"
+            android:background="@drawable/bg_button_dial"
+            app:backgroundTint="@null"
             android:text="Dial"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
@@ -65,21 +86,32 @@
             android:drawableStart="@drawable/ic_phone"
             android:drawablePadding="6dp"
             android:drawableTint="#FFFFFF"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             android:stateListAnimator="@null"
             style="?android:attr/borderlessButtonStyle"/>
+
+        <!-- Edit button (allows adding/editing PIN and settings) -->
+        <ImageButton
+            android:id="@+id/presetEditBtn"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_edit"
+            android:tint="#94A3B8"
+            android:contentDescription="Edit Preset &amp; PIN"
+            android:layout_marginStart="4dp"/>
 
         <!-- Delete button (visible for custom items) -->
         <ImageButton
             android:id="@+id/presetDeleteBtn"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_trash"
-            android:tint="#64748B"
+            android:tint="#EF4444"
             android:contentDescription="Delete Preset"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="2dp"
             android:visibility="gone"/>
     </LinearLayout>
 </LinearLayout>

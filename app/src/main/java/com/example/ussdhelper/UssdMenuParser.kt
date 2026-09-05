@@ -60,7 +60,10 @@ object UssdMenuParser {
             title = if (options.isNotEmpty()) "Select an option" else "Carrier Message"
         }
 
-        val isPinPrompt = text.contains("pin", ignoreCase = true) || text.contains("password", ignoreCase = true)
+        val isPinPrompt = text.contains("pin", ignoreCase = true) ||
+                text.contains("password", ignoreCase = true) ||
+                text.contains("secret code", ignoreCase = true) ||
+                text.contains("የይለፍ", ignoreCase = true)
 
         return ParsedUssdMenu(
             title = title,

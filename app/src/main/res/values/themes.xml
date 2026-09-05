@@ -5,6 +5,13 @@
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="android:navigationBarColor">#0C0E17</item>
         <item name="android:windowBackground">#0C0E17</item>
+        <item name="buttonStyle">@style/CustomAppButton</item>
+    </style>
+
+    <style name="CustomAppButton" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@null</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:stateListAnimator">@null</item>
     </style>
 
     <style name="Theme.UssdHelper" parent="Base.Theme.UssdHelper" />

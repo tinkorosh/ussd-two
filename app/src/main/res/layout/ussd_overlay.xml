@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0C0E17"
@@ -148,7 +149,7 @@
                     android:background="@drawable/bg_menu_card"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="14dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -179,7 +180,7 @@
                     android:orientation="vertical"
                     android:background="@drawable/bg_card"
                     android:padding="12dp"
-                    android:layout_marginBottom="14dp"
+                    android:layout_marginBottom="12dp"
                     android:visibility="gone">
 
                     <TextView
@@ -197,7 +198,43 @@
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
                         android:background="@drawable/bg_confirm_btn"
+                        app:backgroundTint="@null"
                         android:text="✓ CONFIRM (PRESS 1)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:stateListAnimator="@null"
+                        style="?android:attr/borderlessButtonStyle"/>
+                </LinearLayout>
+
+                <!-- Quick Auto-PIN Card (Shown when prompt asks for PIN and user has a saved PIN) -->
+                <LinearLayout
+                    android:id="@+id/quickPinCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_card"
+                    android:padding="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SAVED PIN DETECTED"
+                        android:textColor="#F59E0B"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp"/>
+
+                    <Button
+                        android:id="@+id/btnQuickAutoPin"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:background="@drawable/bg_button_pin"
+                        app:backgroundTint="@null"
+                        android:text="🔑 ENTER PIN (••••)"
                         android:textColor="#FFFFFF"
                         android:textSize="15sp"
                         android:textStyle="bold"
@@ -224,44 +261,43 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"/>
 
-                <!-- Custom Input / PIN Entry Section -->
+                <!-- Toggle button to reveal custom input / keypad (HIDDEN BY DEFAULT AS REQUESTED) -->
+                <Button
+                    android:id="@+id/btnToggleCustomInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_button_custom_reveal"
+                    app:backgroundTint="@null"
+                    android:text="⌨ Custom Input / Keypad ▾"
+                    android:textColor="#38BDF8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:stateListAnimator="@null"
+                    style="?android:attr/borderlessButtonStyle"/>
+
+                <!-- Collapsible Custom Input / PIN Entry Section (GONE BY DEFAULT) -->
                 <LinearLayout
+                    android:id="@+id/customInputSection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_card"
                     android:orientation="vertical"
                     android:padding="14dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/customInputTitle"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-
-                        <TextView
-                            android:id="@+id/customInputTitle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="CUSTOM INPUT / PIN ENTRY"
-                            android:textColor="#38BDF8"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.08"/>
-
-                        <TextView
-                            android:id="@+id/toggleKeypadBtn"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="KEYPAD ▾"
-                            android:textColor="#94A3B8"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:padding="4dp"/>
-                    </LinearLayout>
+                        android:text="CUSTOM INPUT"
+                        android:textColor="#38BDF8"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="8dp"/>
 
                     <!-- Input row with text and send button -->
                     <LinearLayout
@@ -276,7 +312,7 @@
                             android:layout_height="48dp"
                             android:layout_weight="1"
                             android:background="@drawable/bg_input_field"
-                            android:hint="Enter PIN, 1, or amount..."
+                            android:hint="Enter reply, PIN, or amount..."
                             android:textColorHint="#64748B"
                             android:textColor="#F8FAFC"
                             android:textSize="15sp"
@@ -293,6 +329,7 @@
                             android:minWidth="76dp"
                             android:layout_marginStart="8dp"
                             android:background="@drawable/bg_button_accent"
+                            app:backgroundTint="@null"
                             android:text="SEND"
                             android:textColor="#FFFFFF"
                             android:textSize="13sp"
@@ -301,14 +338,13 @@
                             style="?android:attr/borderlessButtonStyle"/>
                     </LinearLayout>
 
-                    <!-- Built-in Numeric Keypad (1-9, *, 0, #, Backspace) -->
+                    <!-- Built-in Numeric Keypad -->
                     <LinearLayout
                         android:id="@+id/keypadContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_marginTop="12dp"
-                        android:visibility="visible">
+                        android:layout_marginTop="12dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -323,6 +359,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="1"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -337,6 +374,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="2"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -350,6 +388,7 @@
                                 android:layout_height="46dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="3"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -371,6 +410,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="4"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -385,6 +425,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="5"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -398,6 +439,7 @@
                                 android:layout_height="46dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="6"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -419,6 +461,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="7"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -433,6 +476,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="8"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -446,6 +490,7 @@
                                 android:layout_height="46dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="9"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -466,6 +511,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="*"
                                 android:textColor="#38BDF8"
                                 android:textSize="20sp"
@@ -480,6 +526,7 @@
                                 android:layout_weight="1"
                                 android:layout_marginEnd="6dp"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="0"
                                 android:textColor="#F8FAFC"
                                 android:textSize="17sp"
@@ -493,6 +540,7 @@
                                 android:layout_height="46dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/bg_keypad_btn"
+                                app:backgroundTint="@null"
                                 android:text="⌫"
                                 android:textColor="#FCA5A5"
                                 android:textSize="18sp"
@@ -511,8 +559,9 @@
     <Button
         android:id="@+id/overlayCancelBtn"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="50dp"
         android:background="@drawable/btn_cancel_rounded"
+        app:backgroundTint="@null"
         android:text="Cancel Session"
         android:textColor="#FCA5A5"
         android:textSize="15sp"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/dashboardScrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -119,7 +120,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="32dp"
                     android:background="@drawable/bg_button_test"
-                    android:text="Quick Jump ▾"
+                    app:backgroundTint="@null"
+                    android:text="Direct Jump ▾"
                     android:textColor="#38BDF8"
                     android:textSize="11sp"
                     android:textStyle="bold"
@@ -159,6 +161,7 @@
                         android:layout_height="38dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_button_test"
+                        app:backgroundTint="@null"
                         android:text="Direct Service"
                         android:textColor="#38BDF8"
                         android:textSize="11sp"
@@ -174,6 +177,7 @@
                         android:layout_height="38dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_button_test"
+                        app:backgroundTint="@null"
                         android:text="Installed Apps"
                         android:textColor="#C084FC"
                         android:textSize="11sp"
@@ -195,6 +199,7 @@
                         android:layout_height="38dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_button_test"
+                        app:backgroundTint="@null"
                         android:text="App Details (Allow)"
                         android:textColor="#FBBF24"
                         android:textSize="11sp"
@@ -210,6 +215,7 @@
                         android:layout_height="38dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_button_test"
+                        app:backgroundTint="@null"
                         android:text="General Settings"
                         android:textColor="#94A3B8"
                         android:textSize="11sp"
@@ -284,6 +290,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:background="@drawable/bg_button_sim1"
+                    app:backgroundTint="@null"
                     android:text="+ Add Preset"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp"
@@ -371,51 +378,55 @@
                 android:inputType="phone"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="10dp"/>
 
-            <LinearLayout
+            <!-- SIM Selection Radio Row -->
+            <RadioGroup
+                android:id="@+id/customSimRadioGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
-                <Button
-                    android:id="@+id/customDialSim1Btn"
+                <RadioButton
+                    android:id="@+id/customRadioSim1"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_button_sim1"
-                    android:text="Dial SIM 1"
-                    android:textColor="#FFFFFF"
+                    android:text="SIM 1"
+                    android:textColor="#38BDF8"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:drawableStart="@drawable/ic_phone"
-                    android:drawablePadding="6dp"
-                    android:drawableTint="#FFFFFF"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:stateListAnimator="@null"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_marginEnd="6dp"/>
+                    android:checked="true"/>
 
-                <Button
-                    android:id="@+id/customDialSim2Btn"
+                <RadioButton
+                    android:id="@+id/customRadioSim2"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/bg_button_sim2"
-                    android:text="Dial SIM 2"
-                    android:textColor="#FFFFFF"
+                    android:text="SIM 2"
+                    android:textColor="#C084FC"
                     android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:drawableStart="@drawable/ic_phone"
-                    android:drawablePadding="6dp"
-                    android:drawableTint="#FFFFFF"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:stateListAnimator="@null"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_marginStart="6dp"/>
-            </LinearLayout>
+                    android:textStyle="bold"/>
+            </RadioGroup>
+
+            <!-- Single Dial button strictly saying "Dial" -->
+            <Button
+                android:id="@+id/customDialBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_button_dial"
+                app:backgroundTint="@null"
+                android:text="Dial"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:drawableStart="@drawable/ic_phone"
+                android:drawablePadding="8dp"
+                android:drawableTint="#FFFFFF"
+                android:gravity="center"
+                android:stateListAnimator="@null"
+                style="?android:attr/borderlessButtonStyle"/>
         </LinearLayout>
 
         <!-- Info Tip -->
@@ -438,7 +449,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="When dialing USSD, menus are intercepted and rendered with tap buttons and numeric keypad directly on top of your screen."
+                android:text="Carrier menus are intercepted automatically with 1-tap option buttons and smart PIN auto-fill."
                 android:textColor="#94A3B8"
                 android:textSize="11sp"
                 android:lineSpacingMultiplier="1.25"

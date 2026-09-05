@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -21,17 +22,19 @@
             android:gravity="center">
 
             <ImageView
+                android:id="@+id/dialogHeaderIcon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/ic_add"
+                android:src="@drawable/ic_sim_card"
                 android:tint="#38BDF8"
-                android:contentDescription="Add Preset" />
+                android:contentDescription="Preset" />
         </LinearLayout>
 
         <TextView
+            android:id="@+id/dialogTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Quick Action Preset"
+            android:text="Quick Action Preset"
             android:textColor="#F8FAFC"
             android:textSize="17sp"
             android:textStyle="bold"
@@ -54,14 +57,14 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="@drawable/bg_input_field"
-        android:hint="e.g. Daily Data, Telebirr Transfer"
+        android:hint="e.g. Telebirr, Balance, Airtime"
         android:textColorHint="#475569"
         android:textColor="#F8FAFC"
         android:textSize="14sp"
         android:inputType="textCapWords"
         android:paddingStart="14dp"
         android:paddingEnd="14dp"
-        android:layout_marginBottom="14dp"/>
+        android:layout_marginBottom="12dp"/>
 
     <!-- USSD Code input -->
     <TextView
@@ -87,7 +90,40 @@
         android:inputType="phone"
         android:paddingStart="14dp"
         android:paddingEnd="14dp"
-        android:layout_marginBottom="14dp"/>
+        android:layout_marginBottom="12dp"/>
+
+    <!-- PIN input -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SAVED PIN (OPTIONAL AUTO-FILL)"
+            android:textColor="#F59E0B"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.06"/>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/dialogPresetPinInput"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="e.g. 1234 (Auto-fills on carrier PIN prompt)"
+        android:textColorHint="#475569"
+        android:textColor="#F8FAFC"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:inputType="numberPassword"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:layout_marginBottom="12dp"/>
 
     <!-- Target SIM selector -->
     <TextView
@@ -98,14 +134,14 @@
         android:textSize="11sp"
         android:textStyle="bold"
         android:letterSpacing="0.06"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="6dp"/>
 
     <RadioGroup
         android:id="@+id/dialogSimRadioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="18dp">
 
         <RadioButton
             android:id="@+id/dialogRadioSim1"
@@ -150,7 +186,8 @@
             android:layout_width="0dp"
             android:layout_height="44dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_button_sim"
+            android:background="@drawable/bg_button_test"
+            app:backgroundTint="@null"
             android:text="Cancel"
             android:textColor="#94A3B8"
             android:textSize="14sp"
@@ -164,6 +201,7 @@
             android:layout_height="44dp"
             android:layout_weight="1"
             android:background="@drawable/bg_button_primary"
+            app:backgroundTint="@null"
             android:text="Save Preset"
             android:textColor="#FFFFFF"
             android:textSize="14sp"

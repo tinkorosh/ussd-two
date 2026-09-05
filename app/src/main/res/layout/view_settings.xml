@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -9,9 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="24dp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="20dp"
         android:paddingBottom="36dp">
 
         <!-- Settings Header Section -->
@@ -20,18 +21,17 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="16dp">
 
             <LinearLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/bg_button_sim"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_icon_badge"
                 android:gravity="center">
 
                 <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/ic_settings_gear"
                     android:contentDescription="Settings" />
             </LinearLayout>
@@ -41,185 +41,121 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="14dp">
+                android:layout_marginStart="12dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Settings &amp; Updates"
                     android:textColor="#F8FAFC"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="In-App OTA Updates &amp; SIM Defaults"
+                    android:text="SIM defaults and app updates"
                     android:textColor="#94A3B8"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:layout_marginTop="2dp"/>
             </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="OTA READY"
-                android:textColor="#34D399"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.08"
-                android:background="@drawable/bg_status_active"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"/>
         </LinearLayout>
 
-        <!-- CARD 1: GitHub In-App Updater -->
+        <!-- MINIMAL UPDATER CARD -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card"
             android:orientation="vertical"
-            android:padding="20dp"
-            android:layout_marginBottom="20dp">
+            android:padding="14dp"
+            android:layout_marginBottom="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:gravity="center_vertical">
 
-                <LinearLayout
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:background="@drawable/bg_icon_badge"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:src="@drawable/ic_update"
-                        android:contentDescription="Updater" />
-                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_update"
+                    android:tint="#38BDF8"
+                    android:contentDescription="Updater" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:layout_marginStart="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="GITHUB RELEASES UPDATER"
-                        android:textColor="#94A3B8"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.08"/>
+                    android:layout_marginStart="10dp">
 
                     <TextView
                         android:id="@+id/currentVersionText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Installed: v1.0 (Build 1)"
+                        android:text="v1.0 (Build 1)"
                         android:textColor="#F8FAFC"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="2dp"/>
-                </LinearLayout>
-
-                <!-- Status Badge -->
-                <TextView
-                    android:id="@+id/updateStatusBadge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Up to date"
-                    android:textColor="#34D399"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:background="@drawable/bg_status_active"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"/>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/updateDescriptionText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Connected to tinkorosh/ussd-two releases. Whenever you push to main, updates are published automatically."
-                android:textColor="#64748B"
-                android:textSize="12sp"
-                android:lineSpacingMultiplier="1.25"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- Release Details Box (Shown when a release is fetched) -->
-            <LinearLayout
-                android:id="@+id/releaseDetailsBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_preset_item"
-                android:orientation="vertical"
-                android:padding="14dp"
-                android:visibility="gone"
-                android:layout_marginBottom="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="6dp">
-
-                    <TextView
-                        android:id="@+id/releaseTagText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="New Release v1.0.1"
-                        android:textColor="#38BDF8"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
 
                     <TextView
-                        android:id="@+id/releaseSizeText"
+                        android:id="@+id/updateStatusBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="~12 MB"
-                        android:textColor="#94A3B8"
-                        android:textSize="12sp"/>
+                        android:text="● Up to date"
+                        android:textColor="#34D399"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp"/>
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/releaseNotesText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Automated build with enhancements and bug fixes."
-                    android:textColor="#CBD5E1"
+                <Button
+                    android:id="@+id/checkUpdateBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:background="@drawable/bg_button_test"
+                    app:backgroundTint="@null"
+                    android:text="Check"
+                    android:textColor="#38BDF8"
                     android:textSize="12sp"
-                    android:lineSpacingMultiplier="1.2"
-                    android:maxLines="4"
-                    android:ellipsize="end"/>
+                    android:textStyle="bold"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:stateListAnimator="@null"
+                    style="?android:attr/borderlessButtonStyle"/>
             </LinearLayout>
 
-            <!-- Download Progress Bar (Shown during download) -->
+            <!-- Minimal update available row (only shown if update exists) -->
+            <Button
+                android:id="@+id/downloadInstallBtn"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_button_primary"
+                app:backgroundTint="@null"
+                android:text="Download &amp; Install Update"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:stateListAnimator="@null"
+                style="?android:attr/borderlessButtonStyle"
+                android:visibility="gone"
+                android:layout_marginTop="10dp"/>
+
+            <!-- Download Progress Bar (Shown only during download) -->
             <LinearLayout
                 android:id="@+id/downloadProgressBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone"
-                android:layout_marginBottom="16dp">
+                android:layout_marginTop="10dp">
 
                 <ProgressBar
                     android:id="@+id/downloadProgressBar"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="8dp"
+                    android:layout_height="6dp"
                     android:indeterminate="false"
                     android:max="100"
                     android:progress="0"
@@ -230,53 +166,10 @@
                     android:id="@+id/downloadProgressText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Downloading: 0%"
+                    android:text="Downloading..."
                     android:textColor="#38BDF8"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="6dp"/>
-            </LinearLayout>
-
-            <!-- Action Buttons -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/downloadInstallBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_button_primary"
-                    android:text="Download &amp; Install Update"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:drawableStart="@drawable/ic_update"
-                    android:drawablePadding="10dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:stateListAnimator="@null"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:visibility="gone"
-                    android:layout_marginBottom="10dp"/>
-
-                <Button
-                    android:id="@+id/checkUpdateBtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:background="@drawable/bg_button_sim1"
-                    android:text="Check for Updates Now"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:drawableStart="@drawable/ic_refresh"
-                    android:drawablePadding="10dp"
-                    android:drawableTint="#FFFFFF"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:stateListAnimator="@null"
-                    style="?android:attr/borderlessButtonStyle"/>
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -287,26 +180,27 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card"
             android:orientation="vertical"
-            android:padding="20dp"
-            android:layout_marginBottom="20dp">
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="10dp">
 
                 <LinearLayout
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
                     android:background="@drawable/bg_icon_badge"
                     android:gravity="center">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:src="@drawable/ic_sim_card"
+                        android:tint="#38BDF8"
                         android:contentDescription="SIM Prefs" />
                 </LinearLayout>
 
@@ -314,36 +208,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginStart="12dp">
+                    android:layout_marginStart="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="DIALING PREFERENCES"
+                        android:text="DEFAULT SIM PREFERENCE"
                         android:textColor="#94A3B8"
                         android:textSize="11sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.08"/>
+                        android:letterSpacing="0.06"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Default SIM Slot"
+                        android:text="Card Selection for Dials"
                         android:textColor="#F8FAFC"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:layout_marginTop="2dp"/>
+                        android:layout_marginTop="1dp"/>
                 </LinearLayout>
             </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Choose your preferred SIM card for executing one-tap USSD requests and quick dialed codes."
-                android:textColor="#64748B"
-                android:textSize="12sp"
-                android:lineSpacingMultiplier="1.25"
-                android:layout_marginBottom="14dp"/>
 
             <RadioGroup
                 android:id="@+id/simPreferenceRadioGroup"
@@ -353,26 +238,29 @@
                 <RadioButton
                     android:id="@+id/radioSimAsk"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:text="Prompt / Choose Each Time"
+                    android:layout_height="40dp"
+                    android:text="Choose Each Time / Preset Default"
                     android:textColor="#F8FAFC"
+                    android:textSize="13sp"
                     android:buttonTint="#38BDF8"
                     android:checked="true"/>
 
                 <RadioButton
                     android:id="@+id/radioSim1"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="40dp"
                     android:text="Always Default to SIM 1"
                     android:textColor="#F8FAFC"
+                    android:textSize="13sp"
                     android:buttonTint="#38BDF8"/>
 
                 <RadioButton
                     android:id="@+id/radioSim2"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="40dp"
                     android:text="Always Default to SIM 2"
                     android:textColor="#F8FAFC"
+                    android:textSize="13sp"
                     android:buttonTint="#C084FC"/>
             </RadioGroup>
 
@@ -384,24 +272,24 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="10dp">
 
                 <LinearLayout
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
                     android:background="@drawable/bg_icon_badge"
                     android:gravity="center">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:src="@drawable/ic_github"
                         android:contentDescription="GitHub" />
                 </LinearLayout>
@@ -410,7 +298,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginStart="12dp">
+                    android:layout_marginStart="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -419,7 +307,7 @@
                         android:textColor="#94A3B8"
                         android:textSize="11sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.08"/>
+                        android:letterSpacing="0.06"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -428,32 +316,24 @@
                         android:textColor="#F8FAFC"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:layout_marginTop="2dp"/>
+                        android:layout_marginTop="1dp"/>
                 </LinearLayout>
             </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Every commit pushed to the main branch automatically triggers GitHub Actions to compile and publish a fresh release."
-                android:textColor="#64748B"
-                android:textSize="12sp"
-                android:lineSpacingMultiplier="1.25"
-                android:layout_marginBottom="16dp"/>
 
             <Button
                 android:id="@+id/openGithubRepoBtn"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
+                android:layout_height="40dp"
                 android:background="@drawable/bg_button_test"
+                app:backgroundTint="@null"
                 android:text="Open Repository on GitHub"
                 android:textColor="#CBD5E1"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:drawableStart="@drawable/ic_github"
-                android:drawablePadding="10dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+                android:drawablePadding="8dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:stateListAnimator="@null"
                 style="?android:attr/borderlessButtonStyle"/>
 

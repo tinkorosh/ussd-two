@@ -16,6 +16,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import org.json.JSONArray
 
 class UssdAccessibilityService : AccessibilityService() {
 
@@ -25,6 +26,8 @@ class UssdAccessibilityService : AccessibilityService() {
     companion object {
         // Flag to restrict overlay drawing to app-initiated calls only
         @Volatile var isAppInitiatedCall = false
+        @Volatile var activeDialedCode: String = ""
+        @Volatile var activeDialedPin: String = ""
     }
 
     override fun onCreate() {
@@ -101,8 +104,20 @@ class UssdAccessibilityService : AccessibilityService() {
 
         val customInput = view.findViewById<EditText>(R.id.overlayCustomInput)
         val sendCustomBtn = view.findViewById<Button>(R.id.overlaySendCustomBtn)
-        val keypadContainer = view.findViewById<LinearLayout>(R.id.keypadContainer)
-        val toggleKeypadBtn = view.findViewById<TextView>(R.id.toggleKeypadBtn)
+        val btnToggleCustomInput = view.findViewById<Button>(R.id.btnToggleCustomInput)
+        val customInputSection = view.findViewById<View>(R.id.customInputSection)
+
+        // Toggle custom input visibility
+        btnToggleCustomInput?.setOnClickListener {
+            if (customInputSection?.visibility == View.VISIBLE) {
+                customInputSection.visibility = View.GONE
+                btnToggleCustomInput.text = "⌨ Custom Input / Keypad ▾"
+                updateWindowFocusable(false)
+            } else {
+                customInputSection?.visibility = View.VISIBLE
+                btnToggleCustomInput.text = "⌨ Hide Custom Input ▲"
+            }
+        }
 
         // Make window focusable when user interacts with custom input so soft keyboard works
         customInput?.setOnFocusChangeListener { _, hasFocus ->
@@ -135,17 +150,6 @@ class UssdAccessibilityService : AccessibilityService() {
                 true
             } else {
                 false
-            }
-        }
-
-        // Toggle Keypad Visibility
-        toggleKeypadBtn?.setOnClickListener {
-            if (keypadContainer?.visibility == View.VISIBLE) {
-                keypadContainer.visibility = View.GONE
-                toggleKeypadBtn.text = "KEYPAD ▾"
-            } else {
-                keypadContainer?.visibility = View.VISIBLE
-                toggleKeypadBtn.text = "KEYPAD ▴"
             }
         }
 
@@ -200,6 +204,47 @@ class UssdAccessibilityService : AccessibilityService() {
         }
     }
 
+    private fun getSavedPinForSession(): String {
+        if (activeDialedPin.isNotBlank()) return activeDialedPin.trim()
+        val prefs = getSharedPreferences("ussd_prefs", Context.MODE_PRIVATE)
+        val dialed = activeDialedCode.trim()
+
+        // 1. Direct match by dialed code
+        val directPin = prefs.getString("pin_for_$dialed", null)
+        if (!directPin.isNullOrBlank()) return directPin.trim()
+
+        // 2. Lookup in custom presets
+        val jsonStr = prefs.getString("custom_presets_json", null)
+        if (!jsonStr.isNullOrBlank()) {
+            try {
+                val array = JSONArray(jsonStr)
+                for (i in 0 until array.length()) {
+                    val obj = array.getJSONObject(i)
+                    val code = obj.optString("code", "").trim()
+                    val pin = obj.optString("pin", "").trim()
+                    if (pin.isNotEmpty()) {
+                        if (code.equals(dialed, ignoreCase = true) ||
+                            (dialed.isNotEmpty() && dialed.startsWith(code.trimEnd('#')))) {
+                            return pin
+                        }
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        // 3. Fallbacks for standard presets
+        if (dialed.startsWith("*999")) {
+            val def999 = prefs.getString("pin_for_*999#", null)
+            if (!def999.isNullOrBlank()) return def999.trim()
+        }
+        if (dialed.startsWith("*777")) {
+            val def777 = prefs.getString("pin_for_*777#", null)
+            if (!def777.isNullOrBlank()) return def777.trim()
+        }
+
+        return ""
+    }
+
     private fun showMenuState(rawText: String) {
         overlayView?.let { view ->
             val loadingLayout = view.findViewById<View>(R.id.loadingLayout)
@@ -209,19 +254,23 @@ class UssdAccessibilityService : AccessibilityService() {
             val cancelBtn = view.findViewById<Button>(R.id.overlayCancelBtn)
             val quickConfirmCard = view.findViewById<View>(R.id.quickConfirmCard)
             val btnQuickConfirmOne = view.findViewById<Button>(R.id.btnQuickConfirmOne)
-            val customInput = view.findViewById<EditText>(R.id.overlayCustomInput)
-            val customInputTitle = view.findViewById<TextView>(R.id.customInputTitle)
-            val keypadContainer = view.findViewById<LinearLayout>(R.id.keypadContainer)
-            val toggleKeypadBtn = view.findViewById<TextView>(R.id.toggleKeypadBtn)
+            val quickPinCard = view.findViewById<View>(R.id.quickPinCard)
+            val btnQuickAutoPin = view.findViewById<Button>(R.id.btnQuickAutoPin)
+            val customInputSection = view.findViewById<View>(R.id.customInputSection)
+            val btnToggleCustomInput = view.findViewById<Button>(R.id.btnToggleCustomInput)
             val actionsSectionTitle = view.findViewById<TextView>(R.id.actionsSectionTitle)
 
             loadingLayout.visibility = View.GONE
             contentLayout.visibility = View.VISIBLE
 
+            // Ensure custom input section is collapsed by default
+            customInputSection.visibility = View.GONE
+            btnToggleCustomInput.text = "⌨ Custom Input / Keypad ▾"
+
             val parsed = UssdMenuParser.parse(rawText)
             menuTextView.text = parsed.title
 
-            // Check if carrier is asking for confirmation ("To confirm press 1")
+            // 1. Check for Confirmation prompt ("To confirm press 1")
             val isConfirmPrompt = parsed.hasConfirmOne ||
                 rawText.contains("confirm press 1", ignoreCase = true) ||
                 rawText.contains("press 1 to confirm", ignoreCase = true) ||
@@ -238,20 +287,31 @@ class UssdAccessibilityService : AccessibilityService() {
                 quickConfirmCard.visibility = View.GONE
             }
 
-            // Check if prompt specifically asks for a PIN
-            if (parsed.isPinPrompt) {
-                customInputTitle.text = "PIN ENTRY (ENTER DIGITS)"
-                customInput.hint = "Enter your PIN code..."
-                keypadContainer.visibility = View.VISIBLE
-                toggleKeypadBtn.text = "KEYPAD ▴"
+            // 2. Check for PIN prompt and saved PIN
+            val isPinPrompt = parsed.isPinPrompt ||
+                rawText.contains("pin", ignoreCase = true) ||
+                rawText.contains("የይለፍ", ignoreCase = true) ||
+                rawText.contains("password", ignoreCase = true)
+
+            val savedPin = getSavedPinForSession()
+            if (isPinPrompt && savedPin.isNotEmpty()) {
+                quickPinCard.visibility = View.VISIBLE
+                btnQuickAutoPin.text = "🔑 ENTER PIN (••••)"
+                btnQuickAutoPin.setOnClickListener {
+                    showLoadingState()
+                    injectReply(savedPin)
+                }
             } else {
-                customInputTitle.text = "CUSTOM INPUT / PIN ENTRY"
-                customInput.hint = "Enter reply, PIN, or amount..."
+                quickPinCard.visibility = View.GONE
             }
 
-            if (parsed.options.isEmpty() && !isConfirmPrompt) {
+            // Section title & cancel button label
+            if (parsed.options.isEmpty() && !isConfirmPrompt && (!isPinPrompt || savedPin.isEmpty())) {
                 cancelBtn.text = "Dismiss"
                 actionsSectionTitle.text = "DIRECT INPUT"
+                // If there are literally no menu options and no special buttons, show custom input
+                customInputSection.visibility = View.VISIBLE
+                btnToggleCustomInput.text = "⌨ Hide Custom Input ▲"
             } else {
                 cancelBtn.text = "Cancel Session"
                 actionsSectionTitle.text = "SELECT AN ACTION"
@@ -277,8 +337,10 @@ class UssdAccessibilityService : AccessibilityService() {
             windowManager?.removeView(overlayView)
             overlayView = null
         }
-        // Reset the flag so future manual dials aren't hijacked
+        // Reset the flags so future manual dials aren't hijacked
         isAppInitiatedCall = false
+        activeDialedCode = ""
+        activeDialedPin = ""
     }
 
     private fun injectReply(reply: String) {
@@ -298,64 +360,50 @@ class UssdAccessibilityService : AccessibilityService() {
     }
 
     private fun findInputNode(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        val knownIds = listOf(
-            "com.android.phone:id/input_field",
-            "android:id/input",
-            "com.android.phone:id/dialog_input",
-            "com.android.phone:id/text_box",
-            "com.android.phone:id/edittext"
-        )
-        for (id in knownIds) {
-            val node = findByResourceId(root, id)
-            if (node != null && (node.isEditable || node.className == "android.widget.EditText")) {
-                return node
-            }
-        }
-        return findEditableNodeRecursively(root)
+        val byId = findByResourceId(root, "android:id/input_field")
+            ?: findByResourceId(root, "com.android.phone:id/input_field")
+        if (byId != null) return byId
+
+        return findFirstEditableNode(root)
     }
 
-    private fun findEditableNodeRecursively(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
-        if (node == null) return null
-        if (node.isEditable || node.className == "android.widget.EditText") {
-            return node
-        }
+    private fun findFirstEditableNode(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        if (node.isEditable) return node
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
-            val found = findEditableNodeRecursively(child)
+            val found = findFirstEditableNode(child)
             if (found != null) return found
         }
         return null
     }
 
     private fun findSendButton(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        val btn1 = findByResourceId(root, "android:id/button1")
-        if (btn1 != null) return btn1
-        return findButtonByTextRecursively(root, listOf("send", "ok", "submit", "confirm", "reply"))
+        val byId = findByResourceId(root, "android:id/button1")
+            ?: findByResourceId(root, "com.android.phone:id/button1")
+        if (byId != null) return byId
+
+        return findNodeByText(root, "Send")
+            ?: findNodeByText(root, "OK")
+            ?: findNodeByText(root, "Reply")
     }
 
     private fun findCancelButton(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        val btn2 = findByResourceId(root, "android:id/button2")
-        if (btn2 != null) return btn2
-        return findButtonByTextRecursively(root, listOf("cancel", "dismiss", "close", "exit"))
+        val byId = findByResourceId(root, "android:id/button2")
+            ?: findByResourceId(root, "com.android.phone:id/button2")
+        if (byId != null) return byId
+
+        return findNodeByText(root, "Cancel")
+            ?: findNodeByText(root, "Dismiss")
     }
 
-    private fun findButtonByTextRecursively(node: AccessibilityNodeInfo?, targetWords: List<String>): AccessibilityNodeInfo? {
-        if (node == null) return null
-        val text = node.text?.toString()?.lowercase() ?: ""
-        if (node.isClickable && targetWords.any { text.contains(it) }) {
-            return node
-        }
-        for (i in 0 until node.childCount) {
-            val child = node.getChild(i) ?: continue
-            val found = findButtonByTextRecursively(child, targetWords)
-            if (found != null) return found
-        }
-        return null
+    private fun findByResourceId(root: AccessibilityNodeInfo, viewId: String): AccessibilityNodeInfo? {
+        val list = root.findAccessibilityNodeInfosByViewId(viewId)
+        return if (list != null && list.isNotEmpty()) list[0] else null
     }
 
-    private fun findByResourceId(node: AccessibilityNodeInfo, id: String): AccessibilityNodeInfo? {
-        val matches = node.findAccessibilityNodeInfosByViewId(id)
-        return if (matches.isNotEmpty()) matches[0] else null
+    private fun findNodeByText(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
+        val list = node.findAccessibilityNodeInfosByText(text)
+        return if (list != null && list.isNotEmpty()) list[0] else null
     }
 
     override fun onInterrupt() {
