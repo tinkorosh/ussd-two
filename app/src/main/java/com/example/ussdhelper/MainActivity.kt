@@ -34,6 +34,47 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateAccessibilityStatus()
+    }
+
+    private fun updateAccessibilityStatus() {
+        val statusText = findViewById<android.widget.TextView>(R.id.accessibilityStatusText) ?: return
+        val enableBtn = findViewById<Button>(R.id.enableAccessibilityBtn)
+        val isEnabled = isAccessibilityServiceEnabled()
+
+        if (isEnabled) {
+            statusText.text = "● Service is Active & Ready"
+            statusText.setTextColor(android.graphics.Color.parseColor("#4ADE80"))
+            enableBtn.text = "1. Accessibility Service (Active)"
+        } else {
+            statusText.text = "● Service Not Enabled — Tap below to allow"
+            statusText.setTextColor(android.graphics.Color.parseColor("#FBBF24"))
+            enableBtn.text = "1. Enable Accessibility Service"
+        }
+    }
+
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val expectedComponentName = "${packageName}/${UssdAccessibilityService::class.java.canonicalName}"
+        val expectedShortName = "${packageName}/${UssdAccessibilityService::class.java.name}"
+        val enabledServices = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+
+        val splitter = android.text.TextUtils.SimpleStringSplitter(':')
+        splitter.setString(enabledServices)
+        while (splitter.hasNext()) {
+            val component = splitter.next()
+            if (component.equals(expectedComponentName, ignoreCase = true) ||
+                component.equals(expectedShortName, ignoreCase = true)) {
+                return true
+            }
+        }
+        return false
+    }
+
     private fun dialUssd(ussdCode: String, simSlot: Int) {
         val permissions = arrayOf(
             Manifest.permission.CALL_PHONE,

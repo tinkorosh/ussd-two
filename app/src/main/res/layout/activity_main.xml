@@ -1,70 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:padding="24dp"
-    android:background="#1E1E2E"> <!-- Matching dark background -->
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:background="#1E1E2E">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="USSD Setup"
-        android:textColor="#888A9E"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textAllCaps="true"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="24dp">
 
-    <!-- Styled accessibility toggle -->
-    <Button
-        android:id="@+id/enableAccessibilityBtn"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@drawable/btn_rounded"
-        android:text="1. Enable Accessibility Service"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_marginBottom="24dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="USSD Setup"
+            android:textColor="#888A9E"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Quick Actions"
-        android:textColor="#888A9E"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textAllCaps="true"
-        android:layout_marginBottom="16dp"/>
+        <!-- Service status indicator -->
+        <TextView
+            android:id="@+id/accessibilityStatusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="● Checking service status..."
+            android:textColor="#888A9E"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp"/>
 
-    <!-- Dial *999# using SIM 1 -->
-    <Button
-        android:id="@+id/dial999Btn"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@drawable/btn_rounded"
-        android:text="Dial *999# (SIM 1)"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_marginBottom="16dp"/>
+        <!-- Styled accessibility toggle -->
+        <Button
+            android:id="@+id/enableAccessibilityBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:background="@drawable/btn_rounded"
+            android:text="1. Enable Accessibility Service"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_marginBottom="28dp"/>
 
-    <!-- Dial *777# using SIM 2 -->
-    <Button
-        android:id="@+id/dial777Btn"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@drawable/btn_rounded"
-        android:text="Dial *777# (SIM 2)"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_marginBottom="24dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quick Actions"
+            android:textColor="#888A9E"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:layout_marginBottom="14dp"/>
 
-</LinearLayout>
+        <!-- Dial *999# using SIM 1 -->
+        <Button
+            android:id="@+id/dial999Btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:background="@drawable/btn_rounded"
+            android:text="Dial *999# (SIM 1)"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_marginBottom="14dp"/>
+
+        <!-- Dial *777# using SIM 2 -->
+        <Button
+            android:id="@+id/dial777Btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:background="@drawable/btn_rounded"
+            android:text="Dial *777# (SIM 2)"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_marginBottom="24dp"/>
+
+    </LinearLayout>
+</ScrollView>

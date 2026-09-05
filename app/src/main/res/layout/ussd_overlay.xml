@@ -4,7 +4,11 @@
     android:layout_height="match_parent"
     android:background="#1E1E2E"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="32dp"
+    android:paddingBottom="24dp"
+    android:fitsSystemWindows="true"
     android:clickable="true"
     android:focusable="true">
 
@@ -12,13 +16,14 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="USSD Assistant app"
+        android:text="USSD Assistant"
         android:textColor="#888A9E"
-        android:textSize="14sp"
+        android:textSize="13sp"
         android:textStyle="bold"
         android:textAllCaps="true"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="8dp"/>
+        android:letterSpacing="0.08"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"/>
 
     <!-- Loading State Layout (Shown while "USSD code running...") -->
     <LinearLayout
@@ -31,17 +36,19 @@
         android:visibility="gone">
 
         <ProgressBar
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
             android:indeterminateTint="#3B82F6"
             android:layout_marginBottom="16dp"/>
 
         <TextView
+            android:id="@+id/overlayLoadingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Connecting to Ethio Telecom..."
+            android:text="Processing USSD request..."
             android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- Main Content Layout (Shown when a menu is parsed) -->
@@ -52,27 +59,35 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/overlayMenuText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Select an option"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="24dp"/>
-
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
             android:scrollbars="none">
 
             <LinearLayout
-                android:id="@+id/overlayOptionsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/overlayMenuText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select an option"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:lineSpacingMultiplier="1.25"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="20dp"/>
+
+                <LinearLayout
+                    android:id="@+id/overlayOptionsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+            </LinearLayout>
         </ScrollView>
     </LinearLayout>
 
@@ -80,14 +95,14 @@
     <Button
         android:id="@+id/overlayCancelBtn"
         android:layout_width="match_parent"
-        android:layout_height="54dp"
+        android:layout_height="52dp"
         android:background="@drawable/btn_cancel_rounded"
         android:text="Cancel Session"
-        android:textColor="#FF4D4D"
-        android:textSize="16sp"
+        android:textColor="#FF6B6B"
+        android:textSize="15sp"
         android:textStyle="bold"
         style="?android:attr/borderlessButtonStyle"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"/>
 
 </LinearLayout>

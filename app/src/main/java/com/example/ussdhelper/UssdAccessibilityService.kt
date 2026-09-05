@@ -84,6 +84,7 @@ class UssdAccessibilityService : AccessibilityService() {
                 val activeRoot = rootInActiveWindow
                 if (activeRoot != null) {
                     val sysCancelBtn = findByResourceId(activeRoot, "android:id/button2")
+                        ?: findByResourceId(activeRoot, "android:id/button1")
                     sysCancelBtn?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 }
                 removeOverlay()
@@ -110,6 +111,13 @@ class UssdAccessibilityService : AccessibilityService() {
 
             val parsed = parseMenuAndTitle(rawText)
             menuTextView.text = parsed.first
+
+            val cancelBtn = view.findViewById<Button>(R.id.overlayCancelBtn)
+            if (parsed.second.isEmpty()) {
+                cancelBtn.text = "Dismiss"
+            } else {
+                cancelBtn.text = "Cancel Session"
+            }
 
             container.removeAllViews()
 
